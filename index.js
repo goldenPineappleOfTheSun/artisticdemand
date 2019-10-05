@@ -6,17 +6,7 @@ var app = express();
 
 
 app.use(express.static(path.join(__dirname, 'dist')))
-  .get('/testapi', (req, res) => {
-  	$.ajax({
-  		url: 'https://oauth.vk.com/authorize?client_id=7157642&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=friends&response_type=token&v=5.52',
-  		method: 'get',
-  		success: function(data) {
-  			console.log(data);
-  		}
-  	})
-  	res.render('index');
-  })
-  .get('/renderapitoken', (req, res) => {\
+  .get('/renderapitoken', (req, res) => {
     res.send(req.query.code);
   })
   .get('*', (req, res) => {
