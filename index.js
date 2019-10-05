@@ -16,6 +16,9 @@ app.use(express.static(path.join(__dirname, 'dist')))
   	})
   	res.render('index');
   })
+  .get('/renderapitoken', (req, res) => {\
+    res.send(req.query.code);
+  })
   .get('*', (req, res) => {
   	console.log('=)');
   	res.render('index');
