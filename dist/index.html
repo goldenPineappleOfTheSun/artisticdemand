@@ -9,6 +9,35 @@
   src="https://code.jquery.com/jquery-3.4.1.js"
   integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
   crossorigin="anonymous"></script>
-	!!!
+
+	<html>
+	    <head>
+	        ...
+	        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	        ...
+	    </head>
+	    <body>
+	        ...
+	        <form action="https://storage.yandexcloud.net/artisticdemand" method="post" enctype="multipart/form-data">
+	            <!-- Ключ в хранилище: -->
+   				<input type="input" name="key" value="first_screenshot_of_next_minecraft_snapshot" /><br />
+   				<!-- Свойства запроса -->
+			   <!--<input type="hidden" name="x-amz-credential" value="access_key_id/date/ru-central1/s3/aws4_request" />-->
+			   <input type="hidden" name="acl" value="public-read" />
+			   <!--<input type="hidden" name="x-amz-algorithm" value="AWS4-HMAC-SHA256" />-->
+			   <!--<input type="hidden" name="x-amz-date" value="date" />-->
+			   <!--<input type="hidden" name="success_action_redirect" value="some-URL" />-->
+			   <!--<input type="hidden" name="policy" value="base64-encoded-policy-document" />-->
+			   <!--<input type="hidden" name="x-amz-signature" value="signature-string" />-->
+			   <!-- Прочие необходимые поля -->
+			   Файл для загрузки:
+			   <input type="file" name="file" /> <br />
+			   <!-- Поля после “file” игнорируются -->
+			   <input type="submit" name="submit" value="Загрузить" />
+	        </form>
+	        ...
+	    </body>
+	</html>
+
 </body>
 </html>
