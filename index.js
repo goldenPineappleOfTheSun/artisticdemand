@@ -12,12 +12,12 @@ app.use(cors());
 
 app.use(express.static(path.join(__dirname, 'dist')))
   .get('/admin', (req, res) => {
-    let host = `${req.secure ? 'https' : 'http'}://${req.headers.host}`;
+    let host = `${req.protocol}://${req.headers.host}`;
     res.redirect(
       `https://oauth.vk.com/authorize?client_id=${vkappid}&redirect_uri=${host}/vkapi&scope=4&response_type=code`);
   })  
   .get('/vkapi', (req, res) => {
-    let host = `${req.secure ? 'https' : 'http'}://${req.headers.host}`;
+    let host = `${req.protocol}://${req.headers.host}`;
      res.redirect(
       `https://oauth.vk.com/access_token?client_id=${vkappid}&client_secret=${secretkey}&redirect_uri=${host}/photos&code=${req.query.code}`);
   })
