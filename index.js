@@ -12,31 +12,41 @@ app.use(cors());
 
 app.use(express.static(path.join(__dirname, 'dist')))
   .get('/admin', (req, res) => {
-    let host = `${req.protocol}://${req.headers.host}`;
+    let host = `https://${req.headers.host}`;
     res.redirect(
-      `https://oauth.vk.com/authorize?client_id=${vkappid}&redirect_uri=${host}/vkapi&scope=4&response_type=code`);
+      `https://oauth.vk.com/authorize?client_id=${vkappid}&redirect_uri=${host}/maintenance&scope=4&response_type=code`);
   })  
   .get('/vkapi', (req, res) => {
-    let host = `${req.protocol}://${req.headers.host}`;
-     res.redirect(
-      `https://oauth.vk.com/access_token?client_id=${vkappid}&client_secret=${secretkey}&redirect_uri=${host}/photos&code=${req.query.code}`);
-  })
-  .get('/photos', (req, res) => {
-    request.get(      
-      `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${200}&access_token=${req.query.access_token}&v=5.102`,
-      {json: true},
-      (err, res, body) => {
-        if (!err && res.statusCode === 200) {
-          console.log(body);
-        }
-        else {
-          console.log(body);
-        }
+     })
+  .get('/maintenance', (req, res) => {
+
+    let token = null;
+
+    let host = `https://${req.headers.host}`;
+
+    Promise.resolve().then(
+      () => {
+        return new Promise((resolve, reject) => {
+          request.get(
+            `https://oauth.vk.com/access_token?client_id=${vkappid}&client_secret=${secretkey}&redirect_uri=${host}/maintenance&code=${req.query.code}`,
+            {json: true},
+            (error, response, body) => {
+              token = body;
+              resolve(token);
+            });
+        });
       })
-    /*$.ajax({
-      method: 'get',
-      url: `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${200}&access_token=7409c8a4e851665749&v=5.102`
-    })*/
+    .then(
+      (token) => {
+        return new Promise((resolve, reject) => {
+          request.get(
+            `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${200}&access_token=${token.access_token}&v=5.102`,
+            {json: true},
+            (error, response, body) => {
+              res.end(JSON.stringify(body));
+            });
+      })
+    })
   })
   .get('*', (req, res) => {
     console.log(req.headers.host);
