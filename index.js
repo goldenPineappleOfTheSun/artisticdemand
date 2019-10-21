@@ -17,7 +17,7 @@ const pool = new Pool({
 });
 
 app
-        .use(express.static(path.join(__dirname, 'public/')))
+    .use(express.static(path.join(__dirname, 'public/')))
     .set('views', './public')
     .set('view engine', 'pug')
     .get('/admin', (req, res) => {
@@ -60,11 +60,33 @@ app
             const client = await pool.connect()
             const result = await client.query(`select token from vk_access_token`);      
             request.get(
-                `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${500}&access_token=${result.rows[0].token}&v=5.102`,
+                `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${200}&access_token=${result.rows[0].token}&v=5.102`,
                 {json: true},
                 (error, response, body) => {
                     res.send(body);
                 });
+        } catch (err) {
+            console.error(err);
+            res.send("Error " + err);
+        }   
+    })
+    .post('/updatepictures', async (req, res) => {
+        try {            
+            const client = await pool.connect()
+
+            req.body.inserts.forEach(async (x) => {
+                await client.query('insert into pictures values ($1, $2, $3, $4, $5, $6)', 
+                    [x.id, x.album_id, x.date, x.owner_id, x.text, x.status]);
+            });
+
+            /*pool.connect(function(err, client, done) {
+              var stream = client.query(copyFrom('COPY my_table FROM STDIN'));
+              var fileStream = fs.createReadStream('some_file.tsv')
+              fileStream.on('error', done);
+              stream.on('error', done);
+              stream.on('end', done);
+              fileStream.pipe(stream);
+            });*/
         } catch (err) {
             console.error(err);
             res.send("Error " + err);
