@@ -7,7 +7,15 @@
 	export default {
 		methods: {
 			click() {
-				this.$root.$store.dispatch('loadPicturesFromAlbum');
+				let diff = {};
+				var promise = this.$root.$store.dispatch('loadAllPicturesFromAlbum')
+					.then(() => {
+						this.$root.$store.dispatch('loadAllPictures');
+					}).then(() => {
+						diff = this.$root.$store.getters.diff;
+						debugger;
+						//this.$root.$store.dispatch('uploadPictures', diff.added);
+					});
 			}
 		}
 	}

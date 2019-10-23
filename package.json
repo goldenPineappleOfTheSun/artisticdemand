@@ -16,9 +16,11 @@
   "dependencies": {
     "@babel/runtime": "^7.6.3",
     "babel-polyfill": "^6.26.0",
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jquery": "^3.4.1",
+    "lodash": "^4.17.15",
     "pg": "^7.12.1",
     "pug": "^2.0.4",
     "request": "^2.88.0",
