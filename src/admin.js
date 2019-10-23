@@ -1,8 +1,8 @@
-import('babel-polyfill');
 import Vue from 'vue';
 import Vuex from 'vuex';
 import $ from 'jquery';
 import mainVue from './main.vue';
+import 'babel-polyfill';
 
 Vue.use(Vuex);
 
@@ -22,7 +22,7 @@ const store = new Vuex.Store({
     },
     actions: {
     	// loads pictures from vk and updates checks differences between bd and vk versions
-    	async loadPicturesFromAlbum(context) {
+    	loadPicturesFromAlbum: async (context) => {
     		// load from vk
     		await $.ajax({
     			url: '/loadvkphotos',
@@ -59,14 +59,15 @@ const store = new Vuex.Store({
     				picturestoupdate.push(current);
     			}
     		})
-    		$.ajax({
+    		debugger;
+    		/*$.ajax({
     			url: '/updatepictures',
     			method: 'post',
     			data: {updates: picturestoupdate, inserts: picturestoinsert},
     			success(data) {
     				context.commit('picturesFromAlbum', data);
     			}
-    		})
+    		})*/
     	}
     }
 })

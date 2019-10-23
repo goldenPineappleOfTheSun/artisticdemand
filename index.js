@@ -70,6 +70,16 @@ app
             res.send("Error " + err);
         }   
     })
+    .get('/loadpictures', async (req, res) => {
+        try {
+            const client = await pool.connect()
+            const result = await client.query(`select * from picture`);      
+            res.send(result);
+        } catch (err) {
+            console.error(err);
+            res.send("Error " + err);
+        }   
+    })
     .post('/updatepictures', async (req, res) => {
         try {            
             const client = await pool.connect()

@@ -5,7 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 module.exports = {
   mode: 'development',
   entry: {
-    polyfill: '@babel/plugin-transform-regenerator',
+    polyfill: './src/babel-promise.js',
     main: './src/index.js',
     admin: './src/admin.js'
   },
@@ -21,7 +21,8 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env'],
+            plugins: ["@babel/transform-runtime"]
           }
         }
       },
@@ -30,8 +31,12 @@ module.exports = {
     ]
   },
   plugins: [
-      new VueLoaderPlugin()
-  ],/*
+      new VueLoaderPlugin(),
+      //"@babel/transform-runtime"
+  ],/*"presets": ["@babel/preset-env"],
+    "plugins": [
+        ["@babel/transform-runtime"]
+    ]
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
