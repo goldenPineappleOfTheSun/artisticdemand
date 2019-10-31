@@ -5,6 +5,11 @@ import mainVue from './main.vue';
 import 'babel-polyfill';
 import _ from 'lodash';
 
+// todo
+// переменная занят, чтоб несколько действий не накладывалось
+// проверка на сбои нодджс
+// в index.js/uploadphotos проверять, чтоб этот запрос вызывался не чаще, чем раз в 300 мс
+
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
@@ -156,22 +161,36 @@ const store = new Vuex.Store({
 	    		})
 	    	})
     	},
-    	uploadPictures(context, items) {
-    		/*return new Promise((resolve, reject) => {
-	    		$.ajax({
-	    			url: '/uploadpictures',
-	    			method: 'post',
-	    			contentType: 'application/json; charset=utf-8',
-		   			data: JSON.stringify([]),
-	    			success(data) {
-	    				debugger;	    				
-	    				resolve();    				
-	    			},
-	    			error(data) {	    				
-	    				resolve();
-	    			}
+    	uploadPictures(context, items) {    		
+    		return new Promise((resolve, reject) => {
+	    		let chunks = _.chunk(items, 64);
+	    		let promise = Promise.resolve();
+	    		debugger;
+	    		for (var i=0; i<chunks.length; i++) {
+	    			let copy = chunks[i];
+	    			promise = promise.then(() => sendChunk(copy));
+	    			promise = promise.then(() => new Promise((_resolve) => setTimeout(() => {_resolve()}, 500)));
+	    		}	    		
+	    	})
+
+	    	function sendChunk(chunk) {
+		    				//debugger;	
+	    		return new Promise((resolve, reject) => {
+		    			$.ajax({
+		    			url: '/uploadpictures',
+		    			method: 'post',
+		    			contentType: 'application/json; charset=utf-8',
+			   			data: JSON.stringify(chunk),
+		    			success(data) {
+		    				debugger;	    				
+		    				resolve();    				
+		    			},
+		    			error(data) {	    				
+		    				resolve();
+		    			}
+		    		})
 	    		})
-	    	})*/
+	    	}
     	}
     }
 })
