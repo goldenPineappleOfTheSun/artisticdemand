@@ -37,11 +37,12 @@ const store = new Vuex.Store({
 	    }
     },
     getters: {
-    	diff(state) {
+    	/*diff(state) {
     		let result = {
     			added: [],
     			updated: []
     		}
+    		debugger;
     		for (var i in state.albumPictures){
     			let item = state.albumPictures[i];
     			if (!state.pictures[item.id]) {
@@ -49,7 +50,7 @@ const store = new Vuex.Store({
     			}
     		}
     		return result;
-    	}
+    	}*/
     },
     mutations: {
     	albumPictures(state, val) {
@@ -91,13 +92,13 @@ const store = new Vuex.Store({
     },
     actions: {    	
     	loadAllPicturesFromAlbum(context) {   
-    		return new Promise((resolve, reject) => {	
+    		return new Promise((_resolve, _reject) => {	
 	    		let loader = context.state.albumLoader;
 	    		let promise = context.dispatch('loadPicturesFromAlbum');
 	    		for (let i=0; i<=loader.count / loader.batchsize; i++){
 	    			promise = promise.then(() => context.dispatch('loadPicturesFromAlbum'));
 	    		}
-	    		promise = promise.then(() => resolve())
+	    		promise = promise.then(() => _resolve())
     		}) 	
     	},
     	loadPicturesFromAlbum(context) {
@@ -127,17 +128,19 @@ const store = new Vuex.Store({
 	    	})
     	},
     	loadAllPictures(context) { 
-    		return new Promise((resolve, reject) => {	   	
+    		return new Promise((_resolve, _reject) => {	   	
 	    		let loader = context.state.postgresLoader;
 	    		let promise = context.dispatch('loadPictures');
-	    		for (let i=0; i<=loader.count / loader.batchsize; i++){
+	    		for (let i=0; i < Math.floor(loader.count / loader.batchsize); i++){
+	    			debugger;
 	    			promise = promise.then(() => context.dispatch('loadPictures'));
 	    		}
-	    		promise = promise.then(() => resolve())
+	    		promise = promise.then(() => _resolve())
 	    	})
     	},
     	loadPictures(context) {
     		return new Promise((resolve, reject) => {
+	    			debugger;
 	    		let loader = context.state.postgresLoader;
 	    		context.commit('postgresLoaderIsProcessing', true);
 	    		$.ajax({

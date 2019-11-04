@@ -87,6 +87,8 @@ app
         try {            
             const client = await pool.connect();
 
+            /* picture */
+
             let queryStart = 'insert into picture (id, album_id, date, owner_id, text, status) values '
             let query = [];
             req.body.forEach((x) => {
@@ -94,7 +96,21 @@ app
                 query.push([`(${x.id}, ${x.album_id}, ${x.date}, ${x.owner_id}, '${x.text}', 'n')`])
             });
 
-            let result = await client.query(queryStart + query.join(',') + ';');
+            let picResult = await client.query(queryStart + query.join(',') + ';');
+
+            /* picture size */
+
+            queryStart = 'insert into picture_size (src, type, width, height, picture_id) values '
+            query = [];
+            req.body.forEach((x) => {
+                x.sizes.forEach((o) => {
+                    query.push([`('${o.src}', '${o.type}', ${o.width}, ${o.height}, '${x.id}')`])
+                })
+            });
+
+            let sizeResult = await client.query(queryStart + query.join(',') + ';');
+
+
             client.end();
             res.send('ok');
 

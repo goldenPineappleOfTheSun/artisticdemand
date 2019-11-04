@@ -7,17 +7,36 @@
 	export default {
 		methods: {
 			click() {
-				let diff = {};
-				var promise = this.$root.$store.dispatch('loadAllPicturesFromAlbum') 
+				//let diff = {};
+				var promise = Promise.resolve()
 					.then(() => {
-						this.$root.$store.dispatch('loadAllPictures');
+						return this.$root.$store.dispatch('loadAllPicturesFromAlbum');
+					})
+					.then(() => {
+						return this.$root.$store.dispatch('loadAllPictures');
 					}).then(() => {
-						diff = this.$root.$store.getters.diff;
+						//diff = this.$root.$store.getters.diff;
+						let diff = findDiff(this.$root.$store.state.albumPictures, this.$root.$store.state.pictures);
 						debugger;
-						this.$root.$store.dispatch('uploadPictures', diff.added);
+						return this.$root.$store.dispatch('uploadPictures', diff.added);
 					});
 			}
 		}
+	}
+
+	function findDiff(albumPictures, pictures) {
+    	let result = {
+    		added: [],
+    		updated: []
+    	}
+    	debugger;
+    	for (var i in albumPictures){
+    		let item = albumPictures[i];
+    		if (!pictures[item.id]) {
+    			result.added.push(item);
+    		}
+    	}
+    	return result;
 	}
 </script>
 
