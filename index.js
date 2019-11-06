@@ -92,7 +92,6 @@ app
             let queryStart = 'insert into picture (id, album_id, date, owner_id, text, status) values '
             let query = [];
             req.body.forEach((x) => {
-                //let status = x.status == 'good' ? 'g' : x.status == 'new' ? 'n' : x.status == 'deleted' ? 'd' : 'x';
                 query.push([`(${x.id}, ${x.album_id}, ${x.date}, ${x.owner_id}, '${x.text}', 'n')`])
             });
 
@@ -104,57 +103,39 @@ app
             query = [];
             req.body.forEach((x) => {
                 x.sizes.forEach((o) => {
-                    query.push([`('${o.src}', '${o.type}', ${o.width}, ${o.height}, '${x.id}')`])
+                    query.push([`('${o.url}', '${o.type}', ${o.width}, ${o.height}, '${x.id}')`])
                 })
             });
 
             let sizeResult = await client.query(queryStart + query.join(',') + ';');
 
+            client.end();
+            res.send('ok');
+        } 
+        catch (err) {
+            res.send('nope');
+        }   
+    })
+    .post('/updatepictures', async (req, res) => {       
+        try {            
+            const client = await pool.connect();
+
+            /* picture */
+
+            let queryStart = 'update picture as p set status = c.status from (values ';
+            let queryEnd = ') as c(id, status) where p.id = c.id;';
+            let query = [];
+            req.body.forEach((x) => {
+                query.push(`(${x.id}, '${x.status}')`);
+            });
+
+            let picResult = await client.query(queryStart + query.join(',') + queryEnd);
 
             client.end();
             res.send('ok');
-
-            //res.send(JSON.stringify(req.body));
-
-           // console.log('----------');  
-            /*let x = req.body.inserts[0];      
-            let status = x.status == 'good' ? 'g' : x.status == 'new' ? 'n' : x.status == 'deleted' ? 'd' : 'x';     
-            //console.log(`insert into picture (id, album_id, date, owner_id, text, status) values (${x.id}, ${x.album_id}, ${x.date}, ${x.owner_id}, ${x.text}, ${x.status})`);
-
-            let result = await client.query('insert into picture (id, album_id, date, owner_id, text, status) values ($1, $2, $3, $4, $5, $6)', 
-                    [x.id, x.album_id, x.date, x.owner_id, x.text, status]);
-           */
-           /*for (var i=0; i<req.body.inserts.length; i++) {
-                //console.log("------------");
-                //console.log(JSON.stringify(req.body.inserts[i]));
-                let x = req.body.inserts[i];    
-                let status = x.status == 'good' ? 'g' : x.status == 'new' ? 'n' : x.status == 'deleted' ? 'd' : 'x';     
-
-                let result = await client.query('insert into picture (id, album_id, date, owner_id, text, status) values ($1, $2, $3, $4, $5, $6)', 
-                    [x.id, x.album_id, x.date, x.owner_id, x.text, status]);
-                //console.log(JSON.stringify(req.body.inserts[i]));
-           }*/
-
-            //console.log(result);
-           // console.log('----------');
-
-            /*req.body.inserts.forEach(async (x) => {
-                client.query('insert into pictures values ($1, $2, $3, $4, $5, $6)', 
-                    [x.id, x.album_id, x.date, x.owner_id, x.text, x.status]);
-            });*/
-
-            /*pool.connect(function(err, client, done) {
-              var stream = client.query(copyFrom('COPY my_table FROM STDIN'));
-              var fileStream = fs.createReadStream('some_file.tsv')
-              fileStream.on('error', done);
-              stream.on('error', done);
-              stream.on('end', done);
-              fileStream.pipe(stream);
-            });*/
-
-           // client.end();
-           // res.send('ok');
-        } catch (err) {
+        } 
+        catch (err) {
+            res.send('nope');
         }   
     })
     .get('*', (req, res) => {

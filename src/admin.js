@@ -81,13 +81,22 @@ const store = new Vuex.Store({
     	}, 
     	newPicture(state, val) {    	
     		Vue.set(state.pictures, val.id, val);	
-    		Vue.set(state.pictures[val.id], 'status', 'new');	
+    		Vue.set(state.pictures[val.id], 'status', 'n');	// new
     	},
     	pictureStatus(state, val) {    		
     		var pic = state.pictures[val.pic.id];
     		if (!pic)
     			throw 'no such picture';
+    		if (!val.status.length === 1)
+    			throw 'status must be a char';
     		Vue.set(state.pictures[val.pic.id], 'status', val.status);	
+    	},
+    	picturesDeleted(state, arr) {   
+    		if (!arr.isArray)
+    			'arr is not an array'; 		
+    		arr.forEach(x => {
+    			Vue.set(state.pictures[x.id], 'status', 'd');	
+    		})
     	}
     },
     actions: {    	
@@ -168,7 +177,6 @@ const store = new Vuex.Store({
     		return new Promise((resolve, reject) => {
 	    		let chunks = _.chunk(items, 64);
 	    		let promise = Promise.resolve();
-	    		debugger;
 	    		for (var i=0; i<chunks.length; i++) {
 	    			let copy = chunks[i];
 	    			promise = promise.then(() => sendChunk(copy));
@@ -177,15 +185,41 @@ const store = new Vuex.Store({
 	    	})
 
 	    	function sendChunk(chunk) {
-		    				//debugger;	
 	    		return new Promise((resolve, reject) => {
 		    			$.ajax({
 		    			url: '/uploadpictures',
 		    			method: 'post',
 		    			contentType: 'application/json; charset=utf-8',
 			   			data: JSON.stringify(chunk),
-		    			success(data) {
-		    				debugger;	    				
+		    			success(data) {    				
+		    				resolve();    				
+		    			},
+		    			error(data) {	    				
+		    				resolve();
+		    			}
+		    		})
+	    		})
+	    	}
+    	},
+    	updatePictures(context, items) { 
+    		return new Promise((resolve, reject) => {
+	    		let chunks = _.chunk(items, 64);
+	    		let promise = Promise.resolve();
+	    		for (var i=0; i<chunks.length; i++) {
+	    			let copy = chunks[i];
+	    			promise = promise.then(() => sendChunk(copy));
+	    			promise = promise.then(() => new Promise((_resolve) => setTimeout(() => {_resolve()}, 500)));
+	    		}	 
+    		})
+
+	    	function sendChunk(chunk) {
+	    		return new Promise((resolve, reject) => {
+		    			$.ajax({
+		    			url: '/updatepictures',
+		    			method: 'post',
+		    			contentType: 'application/json; charset=utf-8',
+			   			data: JSON.stringify(chunk),
+		    			success(data) {    				
 		    				resolve();    				
 		    			},
 		    			error(data) {	    				
