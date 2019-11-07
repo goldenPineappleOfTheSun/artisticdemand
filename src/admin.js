@@ -15,6 +15,9 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     strict: true,    
     state: {
+    	tags: {
+    		// added, deleted, all etc
+    	},
         albumPictures: {}, // pictures from vk
         albumLoader: {
         	batchsize: 200,
@@ -31,28 +34,28 @@ const store = new Vuex.Store({
         	more: true // true if no more photos
         },
         pictures: {}, // pictures from postgres
-	    filter: {
-	    	added: true,
-	    	removed: true
-	    }
-    },
-    getters: {
-    	/*diff(state) {
-    		let result = {
-    			added: [],
-    			updated: []
-    		}
-    		debugger;
-    		for (var i in state.albumPictures){
-    			let item = state.albumPictures[i];
-    			if (!state.pictures[item.id]) {
-    				result.added.push(item);
-    			}
-    		}
-    		return result;
-    	}*/
     },
     mutations: {
+    	appendTag(state, val) {
+    		if (state.tags[val] !== undefined) 
+    			throw `there is one "${val}" tag already, cant create another`;
+    		Vue.set(state.tags, val, false);
+    	},
+    	enableTag(state, val) {
+    		if (!state.tags[val] === undefined) 
+    			throw `there is no such tag as "${val}"`;
+    		Vue.set(state.tags, val, true);
+    	},
+    	disableTag(state, val) {
+    		if (!state.tags[val] === undefined) 
+    			throw `there is no such tag as "${val}"`;
+    		Vue.set(state.tags, val, false);
+    	},
+    	toggleTag(state, val) {
+    		if (!state.tags[val] === undefined) 
+    			throw `there is no such tag as "${val}"`;
+    		Vue.set(state.tags, val, !state.tags[val]);
+    	},
     	albumPictures(state, val) {
     		val.forEach(x => {
     			Vue.set(state.albumPictures, x.id, x);

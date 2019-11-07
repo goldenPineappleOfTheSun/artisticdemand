@@ -1,5 +1,6 @@
 <template>
-	<div class="root" v-on:click="click">
+	<div class="update-component root" v-on:click="click" :style="style">
+		Синхронизировать с vk
 	</div>
 </template>
 
@@ -65,27 +66,22 @@
     	}
     	return result;
 	}
-
-
-	/* пока не надо статус обновляется на лету */
-	/*function findUpdated(albumPictures, pictures) {
-		let result = [];
-		for (var i in pictures){
-    		let item = pictures[i];
-    		let vk = albumPictures[item.id];
-    		if (!vk) continue;
-    		if (vk.status != item.status) {
-    			result.push(item.id);    			
-    		}
-    	}
-    	return result;
-	}*/
 </script>
 
 <style>
-	.root {
-		width: 100px;
-		height: 100px;
-		background: #000;
+	.update-component {
+		display: inline-block;
+		box-sizing: border-box;
+	    margin: 10px;
+	    padding: 5px 15px;
+	    text-align: center;
+	    color: white;
+    	background: #868480;
+	    cursor: pointer;
+		transition: transform 0.2s ease-out;
+	}
+
+	.update-component:active {
+		transform: scale(0.97, 0.97)
 	}
 </style>

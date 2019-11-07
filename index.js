@@ -46,7 +46,6 @@ app
                 try {
                     const client = await pool.connect()
                     const result = await client.query(`update vk_access_token set token = $1`, [body.access_token]);
-                    console.log('!');
                     res.redirect(`https://${req.headers.host}/admin?loaded=true`);
                     client.release();        
                 } catch (err) {

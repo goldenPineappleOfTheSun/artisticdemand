@@ -1,26 +1,26 @@
 <template>
 	<div class="vue-root-component">
-		<update>			
-		</update>
-		<ul id="example-1">
-			<li v-for="item in albumPicture">
-				{{ item.id }}
-			</li>
-		</ul>
+		<tags-bar/>
 	</div>
 </template>
 
 <script>
-    import update from './components/update.vue';
+    import tagsBar from './components/admin-tags-bar/tags-bar.vue';
 
 	export default {
 		components: {
-			update
+			tagsBar
 		},
-		computed: {
+		/*computed: {
 			albumPicture() {
 				return this.$store.state.albumPictures;
 			}
-		}
+		}*/
 	}	
 </script>
+
+<style>	
+	body {
+		margin: 0;
+	}
+</style>
