@@ -1,10 +1,12 @@
 export default {
 	props: {
-			title: String,
-			name: String
+			customTitle: String,
+			customName: String
 		},
 		data() {
 			return {
+				title: this.customTitle,
+				name: this.customName,
 			}
 		},
 		computed: {
@@ -12,8 +14,8 @@ export default {
 				return {
 				}
 			},
-			isActive() {				
-				return this.$store.state.tags[this.name];
+			isActive() {			
+				return this.$store.state.tags[this.name].state;
 			}
 		},
 		methods: {
@@ -21,7 +23,7 @@ export default {
 				this.$store.commit('toggleTag', this.name);
 			}
 		},
-		created() {
+		/*created() {
 			this.$store.commit('appendTag', this.name);
-		}
+		}*/
 }

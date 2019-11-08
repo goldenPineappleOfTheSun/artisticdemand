@@ -34,27 +34,37 @@ const store = new Vuex.Store({
         	more: true // true if no more photos
         },
         pictures: {}, // pictures from postgres
+        isPopupOpened: false
     },
     mutations: {
+    	/*val is state object*/
     	appendTag(state, val) {
-    		if (state.tags[val] !== undefined) 
-    			throw `there is one "${val}" tag already, cant create another`;
-    		Vue.set(state.tags, val, false);
+    		if (state.tags[val.name] !== undefined) 
+    			throw `there is one "${val.name}" tag already, cant create another`;
+    		Vue.set(state.tags, val.name, Object.assign({
+    			state: false, 
+    			isSpecial: false}, val));
     	},
     	enableTag(state, val) {
-    		if (!state.tags[val] === undefined) 
+    		if (state.tags[val] === undefined) 
     			throw `there is no such tag as "${val}"`;
-    		Vue.set(state.tags, val, true);
+    		Vue.set(state.tags[val], 'state', true);
     	},
     	disableTag(state, val) {
-    		if (!state.tags[val] === undefined) 
+    		if (state.tags[val] === undefined) 
     			throw `there is no such tag as "${val}"`;
-    		Vue.set(state.tags, val, false);
+    		Vue.set(state.tags[val], 'state', false);
     	},
     	toggleTag(state, val) {
-    		if (!state.tags[val] === undefined) 
+    		if (state.tags[val] === undefined) 
     			throw `there is no such tag as "${val}"`;
-    		Vue.set(state.tags, val, !state.tags[val]);
+    		Vue.set(state.tags[val], 'state', !state.tags[val].state);
+    	},
+    	initSpecialTags(state) {
+    		Vue.set(state.tags, 'added', {state: false, name: 'added', title: 'новые', isSpecial: true});
+    		Vue.set(state.tags, 'deleted', {state: false, name: 'deleted', title: 'удаленные', isSpecial: true});
+    		Vue.set(state.tags, 'unsorted', {state: false, name: 'unsorted', title: 'несортированные', isSpecial: false});
+    		Vue.set(state.tags, 'all', {state: false, name: 'all', title: 'все', isSpecial: true});
     	},
     	albumPictures(state, val) {
     		val.forEach(x => {
@@ -100,9 +110,34 @@ const store = new Vuex.Store({
     		arr.forEach(x => {
     			Vue.set(state.pictures[x.id], 'status', 'd');	
     		})
+    	},
+    	openPopup(state) {
+    		state.isPopupOpened = true;
+    	},
+    	closePopup(state) {
+    		state.isPopupOpened = false;
+    		
     	}
     },
-    actions: {    	
+    actions: {    
+    	loadTags(context) {
+    		return new Promise((resolve, reject) => {
+    			$.ajax({
+	    			url: '/loadtags',
+	    			method: 'get',
+	    			contentType: 'application/json; charset=utf-8',
+	    			success(data) {
+	    				data.forEach((x) => {
+	    					context.commit('appendTag', x);
+	    				});
+	    				resolve();
+	    			},
+	    			error(data) {
+	    				resolve();
+	    			}
+	    		})
+    		})
+    	},
     	loadAllPicturesFromAlbum(context) {   
     		return new Promise((_resolve, _reject) => {	
 	    		let loader = context.state.albumLoader;
@@ -240,7 +275,9 @@ new Vue({
 	el: '#app',
 	render(h) {
     	return h(mainVue);
+  	},
+  	created() {
+  		this.$store.commit('initSpecialTags');
+  		this.$store.dispatch('loadTags');
   	}
 })
-
-//async function _load

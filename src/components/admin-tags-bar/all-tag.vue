@@ -18,39 +18,45 @@
 		mixins: [tagMixin],
 		data() {
 			return {
-				process: null
+				processing: null
 			}
 		},
 		computed: {
 			isActive() {
-				if (this.process !== null)
-					return this.process;
+				if (this.processing !== null)
+					return this.processing;
 
-				let tags = this.$store.state.tags;
-				let flag = tags[this.name];
-				for (let item in tags) {
-					if (item !== 'added' && item !== 'deleted' && item !== 'all' && tags[item] === false) {
-						flag = false;
+				for (let i in this.$store.state.tags) {
+					let item = this.$store.state.tags[i];
+					if (!item.isSpecial && item.state === false) {
+						this.$store.commit('disableTag', this.name);
+						return false
 					}
 				}				
-				return flag;
+
+				this.$store.commit('enableTag', this.name);
+				return true;
 			}
 		},
 		methods: {
 			click() {
-				this.process = !this.$store.state.tags[this.name];
-				this.$store.commit('toggleTag', this.name);
+				this.processing = !this.$store.state.tags[this.name].state;
+				let action = this.processing ? 'enableTag' : 'disableTag';
+				this.$store.commit(action, this.name);
 
-				let tags = this.$store.state.tags;
-				for (let item in tags) {
-					if (item !== 'added' && item !== 'deleted' && item !== 'all') {
-						let action = this.isActive ? 'enableTag' : 'disableTag';
-						this.$store.commit(action, item);
+				for (let i in this.$store.state.tags) {
+					let item = this.$store.state.tags[i];
+					if (!item.isSpecial) {
+						this.$store.commit(action, item.name);
 					}
 				}
 
-				this.process = null;
+				this.processing = null;
 			}
+		},
+		created() {
+			this.name = 'all';
+			this.title = 'all';
 		}
 	}
 </script>

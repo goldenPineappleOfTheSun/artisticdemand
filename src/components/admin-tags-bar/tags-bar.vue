@@ -1,23 +1,15 @@
 <template>
 	<div class="root">		
 		<div class="root tags-bar-component">
-			<added-tag
-				title="added"
-				name="added"/>
-			<deleted-tag
-				title="deleted"
-				name="deleted"/>
-			<all-tag
-				title="all"
-				name="all"/>
-			<unsorted-tag
-				title="unsorted"
-				name="unsorted"/>
+			<added-tag/>
+			<deleted-tag/>
+			<all-tag/>
 			<tag
 			v-for="item in tags"
-			:title="item.title"
-			:name="item.name"/>
+			:custom-title="item.title"
+			:custom-name="item.name"/>
 			<update/>
+			<manage-tags/>
 		</div>		
 	</div>
 </template>
@@ -28,12 +20,18 @@
 	import allTag from './all-tag.vue';
 	import unsortedTag from './unsorted-tag.vue';
 	import tag from './tag.vue';
-	import update from '../update.vue';
+	import update from '.././admin/update.vue';
+	import manageTags from './manage-tags.vue';
 
 	export default {
 		computed: {
 			tags() {
-				return [{title: 'hi', name: 'hi'}, {title: 'ow', name: 'ow'}]
+				let result = [];
+				for (var i in this.$store.state.tags) {
+					let item = this.$store.state.tags[i];
+					if (!item.isSpecial) result.push(item);
+				}
+				return result;
 			}
 		},
 		components: {
@@ -43,12 +41,16 @@
 			unsortedTag,
 			tag,
 			update,
+			manageTags
 		}
 	}
 </script>
 
 <style scoped>
 	.tags-bar-component {
+		position: relative;
+		left: 10%;
+		width: 80%;
 	    text-align: center;
 	    border-bottom: 1px solid #ddd;
 	    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);

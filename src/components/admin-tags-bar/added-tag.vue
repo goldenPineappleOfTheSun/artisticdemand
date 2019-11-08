@@ -15,7 +15,11 @@
 	import tagMixin from './tag-mixin.js';
 
 	export default {
-		mixins: [tagMixin]
+		mixins: [tagMixin],
+		created() {
+			this.name = 'added';
+			this.title = 'added';
+		}
 	}
 </script>
 

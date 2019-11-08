@@ -28,19 +28,17 @@ module.exports = {
       },
       { test: /\.vue$/, loader: 'vue-loader' },
       { test: /\.css$/, use: ['vue-style-loader', 'css-loader'] },
+      {
+        test: /\.(svg)$/, 
+        loader: 'file-loader' ,
+        options: {
+          name: '[name].[ext]',
+          outputPath: 'svg'
+        }
+      },
     ]
   },
   plugins: [
       new VueLoaderPlugin(),
-      //"@babel/transform-runtime"
-  ],/*"presets": ["@babel/preset-env"],
-    "plugins": [
-        ["@babel/transform-runtime"]
-    ]
-  resolve: {
-    extensions: ['.js', '.vue', '.json'],
-    alias: {
-    'vue$': 'vue/dist/vue.esm.js',
-    }
-  }*/
+  ]
 }

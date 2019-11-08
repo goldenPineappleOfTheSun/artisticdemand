@@ -1,5 +1,5 @@
 <template>
-	<div class="update-component root" v-on:click="click" :style="style">
+	<div class="update-component root" v-on:click="click">
 		Синхронизировать с vk
 	</div>
 </template>
@@ -75,6 +75,7 @@
 	    margin: 10px;
 	    padding: 5px 15px;
 	    text-align: center;
+	    font-size: 0.8em;
 	    color: white;
     	background: #868480;
 	    cursor: pointer;

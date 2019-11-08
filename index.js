@@ -54,9 +54,20 @@ app
                 }                    
             });
     })
+    .get('/loadtags', async (req, res) => {
+        try {
+            const client = await pool.connect();
+            const result = await client.query(`select * from tag`);    
+            res.send(result.rows);
+            client.end();  
+        } catch (err) {
+            console.error(err);
+            res.send("Error " + err);
+        }   
+    })
     .get('/loadvkphotos', async (req, res) => {
         try {
-            const client = await pool.connect()
+            const client = await pool.connect();
             const result = await client.query(`select token from vk_access_token`);      
             request.get(
                 `https://api.vk.com/method/photos.getAll?owner_id=${333009378}&count=${req.query.count}&offset=${req.query.offset}&access_token=${result.rows[0].token}&v=5.102`,
