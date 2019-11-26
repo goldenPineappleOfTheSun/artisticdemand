@@ -5,7 +5,6 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 module.exports = {
   mode: 'development',
   entry: {
-    polyfill: './src/babel-promise.js',
     main: './src/index.js',
     admin: './src/admin.js'
   },
