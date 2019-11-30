@@ -24,38 +24,58 @@ app
     .use(bodyParser.json())
     .set('views', './public')
     .set('view engine', 'pug')
-    .get('/admindatabasetables', async (req, res) => {   
+    .get('/admindatabasetables', async (req, res) => {
+
+        if (exitIfNotAdmin(req, res) === false){
+            return;
+        };
+
         try {
             const client = await pool.connect();
             const result = await client.query(`SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';`);    
-            res.send(JSON.stringify(result));
+            return res.send(JSON.stringify(result));
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }          
     })
     .get('/admindescribetable', async (req, res) => { 
+
+        if (exitIfNotAdmin(req, res) === false){
+            return;
+        };
+
         try {
             const client = await pool.connect();
             const result = await client.query(`SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME = '${req.query.table}';`);    
-            res.send(JSON.stringify(result));
+            return res.send(JSON.stringify(result));
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }  
     })
     .get('/adminindexes', async (req, res) => { 
+
+        if (exitIfNotAdmin(req, res) === false){
+            return;
+        };
+
         try {
             const client = await pool.connect();
             const result = await client.query(`SELECT indexname, indexdef FROM pg_indexes WHERE tablename = '${req.query.table}';`);    
-            res.send(JSON.stringify(result));
+            return res.send(JSON.stringify(result));
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }  
     })
     .get('/adminforeignkeys', async (req, res) => { 
-        res.send(JSON.stringify(result));
+
+        if (exitIfNotAdmin(req, res) === false){
+            return;
+        };
+
+        return res.send(JSON.stringify(result));
         try {
             const client = await pool.connect();
             const result = await client.query(`SELECT
@@ -73,17 +93,21 @@ app
                 JOIN information_schema.referential_constraints AS rk
                   ON tc.constraint_name = rk.constraint_name
             WHERE constraint_type = 'FOREIGN KEY'`);    
-            res.send(JSON.stringify(result));
+            return res.send(JSON.stringify(result));
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }
     })
     .get('/comparedatabases', async (req, res) => {
         // contract
         if (process.env.NODE_ENV !== 'test') {
-            res.send("Для этого надо запускать тестовую конфигурацию");
+            return res.send("Для этого надо запускать тестовую конфигурацию");
         }
+
+        if (exitIfNotAdmin(req, res) === false){
+            return;
+        };
 
         try {
             // connect
@@ -108,12 +132,12 @@ app
             // check tables
             for (var x in originResult) {
                 if (testResult[x] === undefined)
-                    res.send(`0: test database does not have "${x}" table`)
+                    return res.send(`0: test database does not have "${x}" table`)
             }
             
             for (var x in testResult) {
                 if (originResult[x] === undefined)
-                    res.send(`0: test database has "${x}" table that not presented in origin`)
+                    return res.send(`0: test database has "${x}" table that not presented in origin`)
             }
 
             // check columns
@@ -128,7 +152,7 @@ app
                 
                 for (var c in originRows) {
                     if (testRows[c] === undefined)
-                        res.send(`0: test database does not have "${c}" column in the "${x}" table`)
+                        return res.send(`0: test database does not have "${c}" column in the "${x}" table`)
                     
                     let diff = [];
                     let neglect = {table_catalog:1, udt_catalog:1}
@@ -141,13 +165,13 @@ app
                         }                    
                     }
                     if (diff.length > 0) {
-                        res.send(`0: in table ${x} there are differences in props: ${diff}`)
+                        return res.send(`0: in table ${x} there are differences in props: ${diff}`)
                     }
                 }
 
                 for (var c in testRows) {
                     if (originRows[c] === undefined)
-                        res.send(`0: test table"${x}" has column "${c}" not presented in origin`)
+                        return res.send(`0: test table"${x}" has column "${c}" not presented in origin`)
                 }
             }
 
@@ -162,14 +186,14 @@ app
 
                 for (var i in originIxs) {
                     if (testIxs[i] === undefined)
-                        res.send(`0: test database does not have "${c}" index in the "${x}" table (${JSON.stringify(originIxs[i])})`)
+                        return res.send(`0: test database does not have "${c}" index in the "${x}" table (${JSON.stringify(originIxs[i])})`)
                     if (testIxs[i].indexdef !== originIxs[i].indexdef)
-                        res.send(`0: test database index "${i}" does not match with origin in table "${x}" (${originIxs[i].indexdef})`)
+                        return res.send(`0: test database index "${i}" does not match with origin in table "${x}" (${originIxs[i].indexdef})`)
                 }
 
                 for (var i in testIxs) {
                     if (originIxs[i] === undefined)
-                        res.send(`0: test database has "${i}" index in the "${x}" table not presented in origin`)
+                        return res.send(`0: test database has "${i}" index in the "${x}" table not presented in origin`)
                 }
             }
 
@@ -212,29 +236,37 @@ app
                 
             for (var c in originCons) {
                 if (testCons[c] === undefined)
-                    res.send(`0: test database does not have "${c}" fk" (${JSON.stringify(originCons[c])})`)
+                    return res.send(`0: test database does not have "${c}" fk" (${JSON.stringify(originCons[c])})`)
                 if (!_.isEqual(originCons[c], testCons[c])) {
-                    res.send(`0: test database has wrong fk "${c}" it needs to be like (${JSON.stringify(originCons[c])})`)
+                    return res.send(`0: test database has wrong fk "${c}" it needs to be like (${JSON.stringify(originCons[c])})`)
                 }
             }
 
-            res.send('1: everythings ok!');
+            return res.send('1: everythings ok!');
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }  
     })
     .get('/ping', async (req, res) => {     
         try {
             const client = await pool.connect();
             const result = await client.query(`select * from ping`);    
-            res.send(`"${result.rows[0].ping}"`);
+            return res.send(`"${result.rows[0].ping}"`);
         } catch (err) {
             console.error(err);
-            res.send("Error " + err);
+            return res.send("Error " + err);
         }   
     })
     .get('*', (req, res) => {
-        res.send('hello!');
+        return res.send('hello!');
     })
     .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+
+    function exitIfNotAdmin(req, res) {
+        if (req.query.internalsecret !== process.env.SECRET) {
+            res.send('sorry but you need to specify secret key')
+            return false;
+        }
+        return true;
+    }
