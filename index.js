@@ -24,6 +24,9 @@ app
     .use(bodyParser.json())
     .set('views', './public')
     .set('view engine', 'pug')
+    .get('/test', async (req, res) => {
+        res.sendFile(path.join(__dirname, 'test.html'));
+    })
     .get('/admindatabasetables', async (req, res) => {
 
         if (exitIfNotAdmin(req, res) === false){
@@ -263,10 +266,12 @@ app
     })
     .listen(PORT, () => console.log(`Listening on ${ PORT }`))
 
-    function exitIfNotAdmin(req, res) {
-        if (req.query.internalsecret !== process.env.SECRET) {
-            res.send('sorry but you need to specify secret key')
-            return false;
-        }
-        return true;
+function exitIfNotAdmin(req, res) {
+    if (req.query.internalsecret !== process.env.SECRET) {
+        res.send('sorry but you need to specify secret key')
+        return false;
     }
+    return true;
+}
+
+module.exports = app; // для тестирования

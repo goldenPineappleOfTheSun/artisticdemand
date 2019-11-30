@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "set NODE_ENV=test&& webpack && heroku local",
+    "test": "mocha --timeout 10000",
+    "testweb": "set NODE_ENV=test&& webpack && heroku local",
     "dev": "set NODE_ENV=development&& webpack && heroku local",
     "hi": "heroku pg:psql && select * from ping && exit",
     "heroku-postbuild": "webpack"
@@ -19,6 +20,8 @@
     "@babel/runtime": "^7.6.3",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -38,6 +41,7 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-runtime": "^6.23.0",
     "css-loader": "^3.2.0",
+    "mocha": "^6.2.2",
     "vue-loader": "^15.7.1",
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.41.1",
