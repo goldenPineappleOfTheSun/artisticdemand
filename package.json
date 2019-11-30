@@ -6,6 +6,7 @@
   "scripts": {
     "test": "set NODE_ENV=test&& webpack && heroku local",
     "dev": "set NODE_ENV=development&& webpack && heroku local",
+    "hi": "heroku pg:psql && select * from ping && exit",
     "heroku-postbuild": "webpack"
   },
   "repository": {

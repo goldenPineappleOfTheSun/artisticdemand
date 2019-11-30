@@ -21,7 +21,9 @@ let config = {
 	test: {
 		vk: _.clone(defaultconfig.vk),
 		pg:  {
-			connectionString: 'postgres://qbknwrmyzrvrzn:47cb0b60727950ead8538446d2b5400f85872497b606374ea5ab51ccd070b19f@ec2-46-137-120-243.eu-west-1.compute.amazonaws.com:5432/d1ucqbs3qmeta9'
+			connectionString: 'postgres://qbknwrmyzrvrzn:47cb0b60727950ead8538446d2b5400f85872497b606374ea5ab51ccd070b19f@ec2-46-137-120-243.eu-west-1.compute.amazonaws.com:5432/d1ucqbs3qmeta9',
+			// только в тестовой. вообще это хак, чтоб проверять разницу в схемах, так прост быстрее и это ничего не ломает
+			compareConnectionString: defaultconfig.pg.connectionString
 		}
 	}
 }
