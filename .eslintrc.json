@@ -1,6 +1,21 @@
 {
 	"extends": "strongloop",
     "env": {
-        "es6": true
+        "es6": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2017,
+        "sourceType": "module"
+    },
+    "rules": {
+    	"max-len": [2, 110, 4, {"ignoreUrls": true}],
+    	"indent": ["error", 4],
+    	"strict" : "off",
+    	"space-before-function-paren": ["error", {
+	        "anonymous": "always",
+	        "named": "never",
+	        "asyncArrow": "always"
+	    }]
     }
 }
