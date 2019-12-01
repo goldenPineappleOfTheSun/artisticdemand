@@ -28,9 +28,14 @@
 	<div id="mocha"></div>
 
 	<script>
+
 		describe('Check table schema', function() {
 			this.timeout(15000); 
 			it('First of all lets compare databases', (done) => {
+				if (req.checktables === '0') {
+					return done();
+				};
+
 				$.ajax({
 					url: `comparedatabases?internalsecret=${req.internalsecret}`,
 					method: 'get',
@@ -48,17 +53,158 @@
 			})
 		})
 
-		before(function(done) {
-			$.ajax({
-					url: `admincleanupdatabase?internalsecret=${req.internalsecret}`,
+		describe('Tags', function() {
+
+			this.timeout(5000); 
+
+			beforeEach(function(done) {
+				$.ajax({
+					url: `test/prepareTags?internalsecret=${req.internalsecret}`,
 					method: 'get',
 					success(data) {
 						done();
 					},
 					error(data) {
 						throw '!!!';
+						setTimeout(() => done(), 100);
+					},
+				});
+			});
+
+			it('get/all должен вернуть правильный count', (done) => {
+				$.ajax({
+					url: `tags/all`,
+					method: 'get',
+					success(data) {
+						assertAsync(function() {
+							assert.equal(data.count, '3', data);
+						}, done)
+					},
+					error(data) {
+						throw '!!!';
+						setTimeout(() => done(), 100);
 					}
 				})
+			})
+
+			it('get/all должен вернуть все теги (на самом деле не больше 200)', (done) => {
+				$.ajax({
+					url: `tags/all`,
+					method: 'get',
+					success(data) {
+						assertAsync(function() {
+							assert.deepEqual(
+								data.rows
+									.map((x) => { return { 
+										name: x.name, 
+										defvalue: x.defvalue, 
+										title: x.title }
+									}),
+								[{name: 'first', defvalue: true, title: 'Первый'},
+								{name: 'second', defvalue: true, title: 'Второй'},
+								{name: 'third', defvalue: false, title: 'Третий'}]);
+						}, done)
+					},
+					error(data) {
+						throw '!!!';
+						setTimeout(() => done(), 100);
+					}
+				})
+			})
+
+			it('get/all?pagesize=10&page=1 должен вернуть все теги на странице', (done) => {
+				$.ajax({
+					url: `tags/all?pagesize=2&page=1`,
+					method: 'get',
+					success(data) {
+						assertAsync(function() {
+							assert.deepEqual(
+								data.rows
+									.map((x) => { return { 
+										name: x.name, 
+										defvalue: x.defvalue, 
+										title: x.title }
+									}),
+								[{name: 'third', defvalue: false, title: 'Третий'}]);
+						}, done)
+					},
+					error(data) {
+						throw '!!!';
+						setTimeout(() => done(), 100);
+					}
+				})
+			})
+
+			it('get/all?pagesize=10 должен вернуть первую страницу', (done) => {
+				$.ajax({
+					url: `tags/all?pagesize=2`,
+					method: 'get',
+					success(data) {
+						assertAsync(function() {
+							assert.deepEqual(
+								data.rows
+									.map((x) => { return { 
+										name: x.name, 
+										defvalue: x.defvalue, 
+										title: x.title }
+									}),
+								[{name: 'first', defvalue: true, title: 'Первый'},
+								{name: 'second', defvalue: true, title: 'Второй'}]);
+						}, done)
+					},
+					error(data) {
+						throw '!!!';
+						setTimeout(() => done(), 100);
+					}
+				})
+			})
+
+			it('get/all?pagesize=10000 должен ответить, что страница слишком велика', (done) => {
+				$.ajax({
+					url: `tags/all?pagesize=201`,
+					method: 'get',
+					success(data) {
+						throw 'Must fail!';
+					},
+					error(data) {
+						done();
+					}
+				})
+			})
+
+			it('get/all?pagesize=-5 должен ответить, что страница слишком мала', (done) => {
+				$.ajax({
+					url: `tags/all?pagesize=201`,
+					method: 'get',
+					success(data) {
+						throw 'Must fail!';
+					},
+					error(data) {
+						done();
+					}
+				})
+			})
+		})
+
+		before(function(done) {
+			
+			this.timeout(15000);
+
+			$.ajax({
+				url: `admincleanupdatabase?internalsecret=${req.internalsecret}`,
+				method: 'get',
+				success(data) {
+					done();
+				},
+				error(data) {
+					throw '!!!';
+					setTimeout(() => done(), 100);
+				}
+			})
+		});
+
+		beforeEach(function(done) {
+			setTimeout(() => done(), 300);
 		});
 
 		function assertAsync(callback, done) {
