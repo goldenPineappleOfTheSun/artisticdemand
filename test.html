@@ -48,6 +48,19 @@
 			})
 		})
 
+		before(function(done) {
+			$.ajax({
+					url: `admincleanupdatabase?internalsecret=${req.internalsecret}`,
+					method: 'get',
+					success(data) {
+						done();
+					},
+					error(data) {
+						throw '!!!';
+					}
+				})
+		});
+
 		function assertAsync(callback, done) {
 			let isError = false;
 			try {

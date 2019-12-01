@@ -1,3 +1,4 @@
+/*
 import Vue from 'vue';
 import Vuex from 'vuex';
 // import $ from 'jquery';
@@ -22,4 +23,4 @@ let app = new Vue({
         this.$store.commit('initSpecialTags');
         this.$store.dispatch('loadTags');
     },
-});
+}); */

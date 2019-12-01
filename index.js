@@ -273,6 +273,36 @@ app
             return res.send('Error ' + err);
         }
     })
+    .get('/admincleanupdatabase', async (req, res) => {
+        try {
+            // contract
+            if (process.env.NODE_ENV !== 'test') {
+                return res.send('Для этого надо запускать тестовую конфигурацию');
+            }
+
+            if (exitIfNotAdmin(req, res) === false){
+                return;
+            };
+
+            const client = await pool.connect();
+            let tables = await client.query(`
+                SELECT * FROM pg_catalog.pg_tables 
+                WHERE schemaname != 'pg_catalog' 
+                AND schemaname != 'information_schema';`);
+            tables = tables.rows.map((x) => x.tablename);
+
+            for (let i = 0; i < tables.length; i++) {
+                await client.query(`delete from ${tables[i]}`);
+            }
+
+            await client.query('insert into ping (ping) values (\'pong\')');
+
+            res.send('1: clean');
+        } catch (err) {
+            console.error(err);
+            return res.send('Error ' + err);
+        }
+    })
     .get('/ping', async (req, res) => {
         try {
             const client = await pool.connect();

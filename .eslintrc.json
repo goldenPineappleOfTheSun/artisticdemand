@@ -9,7 +9,7 @@
         "sourceType": "module"
     },
     "rules": {
-    	"max-len": [2, 110, 4, {"ignoreUrls": true}],
+    	"max-len": "off",
     	"indent": ["error", 4],
     	"strict" : "off",
     	"space-before-function-paren": ["error", {

@@ -5,9 +5,7 @@ let defaultconfig = {
         appid: '7157642',
     },
     pg: {
-        connectionString: `postgres://rzlcwyycehngbl:
-            b08699220aad2e15484222299fd554df0b07b2284dca508f19244475e376d573
-            @ec2-174-129-255-128.compute-1.amazonaws.com:5432/d10ivtjecumtra`,
+        connectionString: 'postgres://rzlcwyycehngbl:b08699220aad2e15484222299fd554df0b07b2284dca508f19244475e376d573@ec2-174-129-255-128.compute-1.amazonaws.com:5432/d10ivtjecumtra',
     },
 };
 
@@ -23,10 +21,7 @@ let config = {
     test: {
         vk: _.clone(defaultconfig.vk),
         pg: {
-            connectionString: `postgres://qbknwrmyzrvrzn:
-                47cb0b60727950ead8538446d2b5400f85872497b
-                606374ea5ab51ccd070b19f@ec2-46-137-120-24
-                3.eu-west-1.compute.amazonaws.com:5432/d1ucqbs3qmeta9`,
+            connectionString: 'postgres://qbknwrmyzrvrzn:47cb0b60727950ead8538446d2b5400f85872497b606374ea5ab51ccd070b19f@ec2-46-137-120-243.eu-west-1.compute.amazonaws.com:5432/d1ucqbs3qmeta9',
             // только в тестовой. вообще это хак, чтоб проверять разницу в
             // схемах, так прост быстрее и это ничего не ломает
             compareConnectionString: defaultconfig.pg.connectionString,
