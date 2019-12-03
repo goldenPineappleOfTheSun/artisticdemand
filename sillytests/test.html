@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.css">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/6.2.1/mocha.js"></script>
+      <script>
+        mocha.setup('bdd');
+        const loc = window.location;
+        const req = window.location.search.substr(1).split('&').reduce((acc, cur) => {let x = cur.split('='); acc[x[0]] = x[1]; return acc;}, {})   
+      </script>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/2.0.0/chai.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chai-http@4.3.0/dist/chai-http.js"></script>
+      <script>
+        chai.use(chaiHttp);
+        var assert = chai.assert;
+      </script>
+    </head>
+
+    <div id="mocha"></div>
+
+    <script>
+
+        if (req.byhand === '1') {throw 'by hand!'}
+
+        describe('Check table schema', function() {
+            this.timeout(15000); 
+            it('First of all lets compare databases', (done) => {
+                if (req.checktables === '0') {
+                    return done();
+                };
+
+                $.ajax({
+                    url: `comparedatabases?internalsecret=${req.internalsecret}`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data[0], '1', data);
+                        }, done)
+                    },
+                    error(data) {
+                        assertAsync(function() {
+                            assert.equal(data[0], '1', data);
+                        }, done)
+                    }
+                })
+            })
+        })
+
+        describe('Tags', function() {
+
+            this.timeout(10000); 
+
+            beforeEach(function(done) {
+                $.ajax({
+                    url: `test/prepareTags?internalsecret=${req.internalsecret}`,
+                    method: 'get',
+                    success(data) {
+                        setTimeout(() => done(), 500);
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                });
+            });
+
+            it('tags/all должен вернуть правильный count', (done) => {
+                $.ajax({
+                    url: `tags/all`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data.count, '3', data);
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags/all должен вернуть все теги (на самом деле не больше 200)', (done) => {
+                $.ajax({
+                    url: `tags/all`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.deepEqual(
+                                data.rows
+                                    .map((x) => { return { 
+                                        name: x.name, 
+                                        defvalue: x.defvalue, 
+                                        title: x.title }
+                                    }),
+                                [{name: 'first', defvalue: true, title: 'Первый'},
+                                {name: 'second', defvalue: true, title: 'Второй'},
+                                {name: 'third', defvalue: false, title: 'Третий'}]);
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags/all?pagesize=10&page=1 должен вернуть все теги на странице', (done) => {
+                $.ajax({
+                    url: `tags/all?pagesize=2&page=1`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.deepEqual(
+                                data.rows
+                                    .map((x) => { return { 
+                                        name: x.name, 
+                                        defvalue: x.defvalue, 
+                                        title: x.title }
+                                    }),
+                                [{name: 'third', defvalue: false, title: 'Третий'}]);
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags/all?pagesize=10 должен вернуть первую страницу', (done) => {
+                $.ajax({
+                    url: `tags/all?pagesize=2`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.deepEqual(
+                                data.rows
+                                    .map((x) => { return { 
+                                        name: x.name, 
+                                        defvalue: x.defvalue, 
+                                        title: x.title }
+                                    }),
+                                [{name: 'first', defvalue: true, title: 'Первый'},
+                                {name: 'second', defvalue: true, title: 'Второй'}]);
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags/all?pagesize=10000 должен ответить, что страница слишком велика', (done) => {
+                $.ajax({
+                    url: `tags/all?pagesize=201`,
+                    method: 'get',
+                    success(data) {
+                        throw 'Must fail!';
+                        done();
+                    },
+                    error(err) {
+                        assertAsync(function() {
+                            assert.equal(err.status, 500);
+                        }, done)
+                    }
+                })
+            })
+
+            it('tags/all?pagesize=-5 должен ответить, что страница слишком мала', (done) => {
+                $.ajax({
+                    url: `tags/all?pagesize=201`,
+                    method: 'get',
+                    success(data) {
+                        throw 'Must fail!';
+                        done();
+                    },
+                    error(err) {
+                        assertAsync(function() {
+                            assert.equal(err.status, 500);
+                        }, done)
+                    }
+                })
+            })
+
+            it('tags?name=name должен показать тэг по имени', (done) => {
+                $.ajax({
+                    url: `tags?name=second`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data.name, 'second');
+                            assert.equal(data.defvalue, true);
+                            assert.equal(data.title, 'Второй');
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('put {name, title, defvalue} должно положить элемент', (done) => {
+                $.ajax({
+                    url: `tags`,
+                    contentType: 'application/json',
+                    method: 'put',
+                    data: JSON.stringify({
+                        internalsecret: req.internalsecret, 
+                        tag: {
+                            name: 'apple', 
+                            title: 'Яблоко',
+                            defvalue: true
+                        }                        
+                    }),
+                    success(data) {
+                        Promise.resolve()
+                        .then(() => getTag({name: 'apple'}))
+                        .then((tag) => {
+                            assertAsync(function() {
+                                assert.equal(tag.name, 'apple');
+                                assert.equal(tag.defvalue, true);
+                                assert.equal(tag.title, 'Яблоко');
+                            }, done)
+                        });                
+                    },
+                    error(err) {
+                        throw err;
+                        setTimeout(() => done(), 100);
+                    }
+                })
+            })
+
+            it('put {name} должно положить элемент со значениями {name, false, name}', (done) => {
+                $.ajax({
+                    url: `tags`,
+                    contentType: 'application/json',
+                    method: 'put',
+                    data: JSON.stringify({
+                        internalsecret: req.internalsecret, 
+                        tag: {
+                            name: 'apple', 
+                        }                        
+                    }),
+                    success(data) {
+                        Promise.resolve()
+                        .then(() => getTag({name: 'apple'}))
+                        .then((tag) => {
+                            assertAsync(function() {
+                                assert.equal(tag.name, 'apple');
+                                assert.equal(tag.defvalue, false);
+                                assert.equal(tag.title, 'apple');
+                            }, done)
+                        });                
+                    },
+                    error(err) {
+                        throw err;
+                        setTimeout(() => done(), 100);
+                    }
+                })
+            })
+
+            it('put без name должно сругнуться', (done) => {
+                $.ajax({
+                    url: `tags`,
+                    contentType: 'application/json',
+                    method: 'put',
+                    data: JSON.stringify({
+                        internalsecret: req.internalsecret, 
+                        tag: {
+                            defvalue: true, 
+                        }                        
+                    }),
+                    success(data) {
+                        throw 'Must fail!';
+                        done();
+                    },
+                    error(err) {
+                        assertAsync(function() {
+                            assert.equal(err.status, 500);
+                        }, done)
+                    }
+                })
+            })
+
+            function getTag(params) {
+                if (params.name !== undefined) {
+                    return new Promise((res, rej) => {
+                        $.ajax({
+                            url: `tags?name=${params.name}`,
+                            method: 'get',
+                            success(data) {
+                                res(data);
+                            },
+                            error(err) {
+                                rej(err);
+                            }
+                        })
+                    })
+                }
+            }
+        })
+
+        // tags end
+
+        before(function(done) {
+            
+            this.timeout(15000);
+
+            $.ajax({
+                url: `admincleanupdatabase?internalsecret=${req.internalsecret}`,
+                method: 'get',
+                success(data) {
+                    done();
+                },
+                error(err) {
+                    throw err;
+                    setTimeout(() => done(), 100);
+                }
+            })
+        });
+
+        beforeEach(function(done) {
+            
+            this.timeout(20000);
+
+            setTimeout(() => done(), 100);
+        });
+
+        function assertAsync(callback, done) {
+            let isError = false;
+            try {
+                callback();
+            } 
+            catch (err) {
+                isError = true;
+                done(err);
+            }
+            finally {
+                if (!isError)
+                    done();
+            }
+        }
+
+        $(document).ready(() => {
+            mocha.run();
+        })
+    </script>
+</body>
+</html>

@@ -27,9 +27,6 @@ app
     .use('/tags', tagsRoutes)
     .set('views', './public')
     .set('view engine', 'pug')
-    .get('*', (req, res) => {
-        return res.send('hello!');
-    })
     .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 module.exports = app; // для тестирования

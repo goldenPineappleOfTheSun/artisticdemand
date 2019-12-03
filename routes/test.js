@@ -4,7 +4,7 @@ const path = require('path');
 var router = express.Router();
 
 router.get('/', async (req, res) => {
-    res.sendFile(path.join(__dirname, '../test.html'));
+    res.sendFile(path.join(__dirname, '../sillytests/test.html'));
 });
 
 router.get('/ping', async (req, res) => {
