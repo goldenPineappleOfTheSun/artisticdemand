@@ -3,34 +3,53 @@ const pool = require('./pool');
 const path = require('path');
 var router = express.Router();
 
+/**
+ * Opens up unit testing pageZ
+ * @return {HTML file}
+ */
 router.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, '../sillytests/test.html'));
 });
 
+/**
+ * Return result of ping
+ * @return {string}
+ */
 router.get('/ping', async (req, res) => {
+    let client;
     try {
-        const client = await pool.connect();
+        client = await pool.connect();
+
         const result = await client.query('select * from ping');
         return res.send(`"${result.rows[0].ping}"`);
     } catch (err) {
         console.error(err);
-        return res.send('Error ' + err);
+        return res.status(500).send({ error: err });
+    } finally {
+        client.close();
     }
 });
 
+/**
+ * Prepares tags for testing
+ * @throws {400 Test config needed} If server is not in test mode
+ * @throws {400 No secret key} If internalsecret param is not correct
+ */
 router.get('/prepareTags', async (req, res) => {
+    // contract
+    if (process.env.NODE_ENV !== 'test') {
+        return res.status(400).send({ error: 'Для этого надо запускать тестовую конфигурацию' });
+    }
+
+    if (req.query.internalsecret !== process.env.SECRET) {
+        return res.status(400).send({ error: 'Sorry but you need to specify the secret key' });
+    }
+
+    // insert
+    let client;
     try {
-        // contract
-        if (process.env.NODE_ENV !== 'test') {
-            return res.send('Для этого надо запускать тестовую конфигурацию');
-        }
+        client = await pool.connect();
 
-        if (exitIfNotAdmin(req, res) === false){
-            return;
-        };
-
-        // insert
-        const client = await pool.connect();
 
         await client.query(`delete from tag;
             INSERT INTO tag (name, defvalue, title) 
@@ -42,16 +61,9 @@ router.get('/prepareTags', async (req, res) => {
         return res.end();
     } catch (err) {
         console.error(err);
-        return res.send('Error ' + err);
+        return res.status(500).send({ error: err });
+    } finally {
+        client.close();
     }
 });
-
-function exitIfNotAdmin(req, res) {
-    if (req.query.internalsecret !== process.env.SECRET) {
-        res.send('sorry but you need to specify secret key');
-        return false;
-    }
-    return true;
-}
-
 module.exports = router;
