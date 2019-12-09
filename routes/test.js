@@ -26,7 +26,7 @@ router.get('/ping', async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err });
     } finally {
-        client.close();
+        client.end();
     }
 });
 
@@ -50,7 +50,6 @@ router.get('/prepareTags', async (req, res) => {
     try {
         client = await pool.connect();
 
-
         await client.query(`delete from tag;
             INSERT INTO tag (name, defvalue, title) 
             SELECT 
@@ -63,7 +62,7 @@ router.get('/prepareTags', async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err });
     } finally {
-        client.close();
+        client.end();
     }
 });
 module.exports = router;

@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err });
     } finally {
-        client.close();
+        client.end();
     }
 });
 
@@ -60,7 +60,7 @@ router.put('/', async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err });
     } finally {
-        client.close();
+        client.end();
     }
 });
 
@@ -100,7 +100,7 @@ router.get('/all', async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err });
     } finally {
-        client.close();
+        client.end();
     }
 });
 

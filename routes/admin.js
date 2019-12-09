@@ -19,6 +19,7 @@ router.get('/admindatabasetables', async (req, res) => {
         return res.send(JSON.stringify(result));
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
@@ -36,6 +37,7 @@ router.get('/admindescribetable', async (req, res) => {
         return res.send(JSON.stringify(result));
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
@@ -53,6 +55,7 @@ router.get('/adminindexes', async (req, res) => {
         return res.send(JSON.stringify(result));
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
@@ -82,6 +85,7 @@ router.get('/adminforeignkeys', async (req, res) => {
         return res.send(JSON.stringify(result));
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
@@ -252,6 +256,7 @@ router.get('/comparedatabases', async (req, res) => {
         return res.send('1: everythings ok!');
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
@@ -283,6 +288,7 @@ router.get('/admincleanupdatabase', async (req, res) => {
         res.send('1: clean');
     } catch (err) {
         console.error(err);
+        client.end();
         return res.send('Error ' + err);
     }
 });
