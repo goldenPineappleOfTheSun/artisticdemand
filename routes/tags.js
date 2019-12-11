@@ -3,24 +3,59 @@ const pool = require('./pool');
 var router = express.Router();
 
 /**
- * Gets the single tag by name
- * @throws {400 No name} If name is not presented
- * @return {Tag}
+ * Loads all tags by filter using paging. Max page size is 200
+ * @throws {400 Pagesize} If pagesize is smaller than 1
+ * @throws {400 Pagesize} If pagesize is bigger than 200
+ * @return {count:number, rows:tag[]}
  */
-router.get('/', async (req, res) => {
-    // contract
-    let name = req.query.name;
+router.get('/:template?', async (req, res) => {
+    // get
+    let pagesize = parseInt(req.query.pagesize, 10);
+    let page = parseInt(req.query.page, 10);
 
-    if (name === undefined) {
-        return res.status(400).send({ error: 'Please specify name' });
+    if (!isNaN(pagesize) && pagesize > 200) {
+        return res.status(400).send({ error: 'Pagesize must be smaller than 200' });
     }
 
-    // get
+    if (!isNaN(pagesize) && pagesize < 1) {
+        return res.status(400).send({ error: 'Pagesize must be bigger than 0' });
+    }
+
     let client;
     try {
+        let paging = (!isNaN(pagesize))
+            ? `limit ${pagesize} offset ${pagesize * (page || 0)}`
+            : 'limit 200';
+
         client = await pool.connect();
-        const result = await client.query(`select * from tag where name = '${name}'`);
-        return res.json(result.rows[0]);
+        let filter = [];
+
+        if (req.params.template !== 'all') {
+            if (req.query.name)
+                filter.push(`name='${req.query.name}'`);
+            if (req.query.id)
+                filter.push(`id=${req.query.id}`);
+            if (req.query.defvalue)
+                filter.push(`defvalue=${req.query.defvalue}`);
+            if (req.query.title)
+                filter.push(`title='${req.query.title}'`);
+            filter = `where ${filter.join(' and ')}`;
+        } else {
+            filter = '';
+        }
+
+        let query = `select * from tag ${filter} ${paging}`;
+        
+        if (req.query.diagnostics === '1') {
+            conosle.log(query)
+        }
+
+        const result = await client.query(query);
+
+        res.status(200).send({
+            count: result.rowCount,
+            rows: result.rows,
+        });
     } catch (err) {
         console.error(err);
         return res.status(500).send({ error: err });
@@ -28,6 +63,46 @@ router.get('/', async (req, res) => {
         client.end();
     }
 });
+
+/**
+ * Loads all tags using paging. Max page size is 200
+ * @throws {400 Pagesize} If pagesize is smaller than 1
+ * @throws {400 Pagesize} If pagesize is bigger than 200
+ * @return {Tag[]}
+ *//*
+router.get('/all', async (req, res) => {
+    // contract
+
+    let pagesize = parseInt(req.query.pagesize, 10);
+    let page = parseInt(req.query.page, 10);
+
+    if (!isNaN(pagesize) && pagesize > 200) {
+        return res.status(400).send({ error: 'Pagesize must be smaller than 200' });
+    }
+
+    if (!isNaN(pagesize) && pagesize < 1) {
+        return res.status(400).send({ error: 'Pagesize must be bigger than 0' });
+    }
+
+    let client;
+    try {
+        let paging = (!isNaN(pagesize))
+            ? `limit ${pagesize} offset ${pagesize * (page || 0)}`
+            : 'limit 200';
+
+        client = await pool.connect();
+        const result = await client.query(`select * from tag ${paging}`);
+        return res.send({
+            count: result.rowCount,
+            rows: result.rows,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send({ error: err });
+    } finally {
+        client.end();
+    }
+});*/
 
 /**
  * Puts one tag in the base
@@ -112,6 +187,7 @@ router.post('/', async (req, res) => {
     let client;
     try {
         client = await pool.connect();
+        let query = 
         await client.query(`INSERT INTO tag (name, defvalue, title)
             VALUES (
                 UNNEST(ARRAY[${names.map(x => `'${x}'`).join(',')}]), 
@@ -128,37 +204,29 @@ router.post('/', async (req, res) => {
 });
 
 /**
- * Loads all tags using paging. Max page size is 200
- * @throws {400 Pagesize} If pagesize is smaller than 1
- * @throws {400 Pagesize} If pagesize is bigger than 200
- * @return {Tag[]}
+ * Deletes tag from base
+ * @throws {400 No secret key} If internalsecret param is not correct
+ * @throws {400 No id} If name or id for identification is not presented
  */
-router.get('/all', async (req, res) => {
-    // contract
-
-    let pagesize = parseInt(req.query.pagesize, 10);
-    let page = parseInt(req.query.page, 10);
-
-    if (!isNaN(pagesize) && pagesize > 200) {
-        return res.status(400).send({ error: 'Pagesize must be smaller than 200' });
+router.delete('/', async (req, res) => {
+    // inputs and contracts
+    if (req.body.internalsecret !== process.env.SECRET) {
+        return res.status(400).send({ error: 'Sorry but you need to specify the secret key' });
     }
 
-    if (!isNaN(pagesize) && pagesize < 1) {
-        return res.status(400).send({ error: 'Pagesize must be bigger than 0' });
+    let tag = req.body.tag;
+
+    if (tag.name === undefined && tag.id === undefined) {
+        return res.status(400).send({ error: 'Need to specify id or name' });
     }
 
+    // query
     let client;
     try {
-        let paging = (!isNaN(pagesize))
-            ? `limit ${pagesize} offset ${pagesize * (page || 0)}`
-            : 'limit 200';
-
         client = await pool.connect();
-        const result = await client.query(`select * from tag ${paging}`);
-        return res.send({
-            count: result.rowCount,
-            rows: result.rows,
-        });
+        let filter = tag.id !== undefined ? `id = ${tag.id}` : `name = ${tag.name}`;
+        await client.query(`delete from tag where ${filter};`);
+        return res.sendStatus(200);
     } catch (err) {
         console.error(err);
         return res.status(500).send({ error: err });

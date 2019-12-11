@@ -194,9 +194,79 @@
                     method: 'get',
                     success(data) {
                         assertAsync(function() {
-                            assert.equal(data.name, 'second');
-                            assert.equal(data.defvalue, true);
-                            assert.equal(data.title, 'Второй');
+                            assert.equal(data.rows[0].name, 'second');
+                            assert.equal(data.rows[0].defvalue, true);
+                            assert.equal(data.rows[0].title, 'Второй');
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags?id=id должен показать тэг по id', (done) => {
+                Promise.resolve()
+                .then(() => getTag({name: 'second'}))
+                .then((tag) => {
+                    $.ajax({
+                        url: `tags?id=${tag.id}`,
+                        method: 'get',
+                        success(data) {
+                            assertAsync(function() {
+                                assert.equal(data.rows[0].name, 'second');
+                                assert.equal(data.rows[0].defvalue, true);
+                                assert.equal(data.rows[0].title, 'Второй');
+                            }, done)
+                        },
+                        error(err) {
+                            setTimeout(() => done(new Error(err)), 100);
+                        }
+                    })
+                })               
+            })
+
+            it('tags?name с неверным именем должен вернуть 0 строк', (done) => {
+                $.ajax({
+                    url: `tags?name=nope`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data.count, 0);
+                            assert.equal(data.rows.length, 0);
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags?defvalue должен вернуть все подходящие (не больше 200)', (done) => {
+                $.ajax({
+                    url: `tags?defvalue=true`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data.count, 2);
+                            assert.equal(data.rows[0].name, 'first');
+                            assert.equal(data.rows[1].name, 'second');
+                        }, done)
+                    },
+                    error(err) {
+                        setTimeout(() => done(new Error(err)), 100);
+                    }
+                })
+            })
+
+            it('tags/?pagesize=10&page должен вернуть первую страницу по фильтру', (done) => {
+                $.ajax({
+                    url: `tags/all?pagesize=1&page=0`,
+                    method: 'get',
+                    success(data) {
+                        assertAsync(function() {
+                            assert.equal(data.count, 1);
+                            assert.equal(data.rows[0].name, 'first');
                         }, done)
                     },
                     error(err) {
@@ -326,14 +396,14 @@
                             Promise.resolve()
                             .then(() => getTags([{name: 'apple'}, {name: 'pear'}]))
                             .then((tags) => {
-                                assertAsync(function() {
-                                    assert.equal(tags[0].name, 'apple');
-                                    assert.equal(tags[0].defvalue, true);
-                                    assert.equal(tags[0].title, 'Яблоко');
-                                    assert.equal(tags[1].name, 'pear');
-                                    assert.equal(tags[1].defvalue, false);
-                                    assert.equal(tags[1].title, 'Груша');
-                                }, done)
+                                assert.notEqual(tags[0], null);
+                                assert.notEqual(tags[1], null);
+                                assert.equal(tags[0].name, 'apple');
+                                assert.equal(tags[0].defvalue, true);
+                                assert.equal(tags[0].title, 'Яблоко');
+                                assert.equal(tags[1].name, 'pear');
+                                assert.equal(tags[1].defvalue, false);
+                                assert.equal(tags[1].title, 'Груша');
                             });  
                         }, done)
                     },
@@ -362,11 +432,12 @@
                             Promise.resolve()
                             .then(() => getTags([{name: 'apple'}, {name: 'pear'}, {name: 'mango'}]))
                             .then((tags) => {
-                                assertAsync(function() {
-                                    assert.equal(tags[0].name, 'apple');
-                                    assert.equal(tags[1].defvalue, false);
-                                    assert.equal(tags[2].title, 'mango');
-                                }, done)
+                                assert.notEqual(tags[0], null);
+                                assert.notEqual(tags[1], null);
+                                assert.notEqual(tags[2], null);
+                                assert.equal(tags[0].name, 'apple');
+                                assert.equal(tags[1].defvalue, false);
+                                assert.equal(tags[2].title, 'mango');
                             });  
                         }, done)
                     },
@@ -397,11 +468,12 @@
                                 Promise.resolve()
                                 .then(() => getTags([{name: '0'}, {name: '1a'}, {name: '31'}]))
                                 .then((tags) => {
-                                    assertAsync(function() {
-                                        assert.equal(tags[0].name, '0');
-                                        assert.equal(tags[1].name, '1a');
-                                        assert.equal(tags[2].name, '31');
-                                    }, done)
+                                    assert.notEqual(tags[0], null);
+                                    assert.notEqual(tags[1], null);
+                                    assert.notEqual(tags[2], null);
+                                    assert.equal(tags[0].name, '0');
+                                    assert.equal(tags[1].name, '1a');
+                                    assert.equal(tags[2].name, '31');
                                 });  
                             }, done)
                         },
@@ -483,6 +555,84 @@
                 })
             })
 
+            it('delete tags должен удалить тег по id', (done) => {
+                let tag;
+                Promise.resolve()
+                .then(() => getTag({name: 'first'}))
+                .then((tag) => {
+                    $.ajax({
+                        url: `tags`,
+                        contentType: 'application/json',
+                        method: 'post',
+                        data: JSON.stringify({  
+                            internalsecret: 'q$WLSEuX*8DVk',
+                            tag: {id: tag.id, name: 'wrongname'}                 
+                        }),
+                        success(data) {
+                            assertAsync(function() {
+                                Promise.resolve()
+                                .then(() => getTags([{name: 'first'}, {name: 'second'}]))
+                                .then((tags) => {
+                                    assert.equal(tags[0], null);
+                                    assert.equal(tags[1].name, 'second');
+                                });  
+                            }, done)
+                        },
+                       error(err) {
+                           throw err;
+                           done()
+                       }
+                    })
+                })
+            })
+
+            it('delete tags должен удалить тег по name', (done) => {
+                $.ajax({
+                    url: `tags`,
+                    contentType: 'application/json',
+                    method: 'post',
+                    data: JSON.stringify({  
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {name: 'second'}                 
+                    }),
+                    success(data) {
+                        assertAsync(function() {
+                            Promise.resolve()
+                            .then(() => getTags([{name: 'first'}, {name: 'second'}]))
+                            .then((tags) => {
+                                assert.equal(tags[0].name, 'first');
+                                assert.equal(tags[1], null);
+                            });  
+                        }, done)
+                    },
+                   error(err) {
+                       throw err;
+                       done()
+                   }
+                })
+            });
+
+            it('delete tags без имени и тега должен упасть', (done) => {
+                $.ajax({
+                    url: `tags`,
+                    contentType: 'application/json',
+                    method: 'post',
+                    data: JSON.stringify({  
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {}                 
+                    }),
+                    success(data) {
+                        throw 'Must fail!';
+                        done();
+                    },
+                    error(err) {
+                        assertAsync(function() {
+                            assert.equal(err.status, 400);
+                        }, done)
+                    }
+                })
+            })
+
             function getTag(params) {
                 if (params.name !== undefined) {
                     return new Promise((res, rej) => {
@@ -490,7 +640,10 @@
                             url: `tags?name=${params.name}`,
                             method: 'get',
                             success(data) {
-                                res(data);
+                                if (data.count === 0) {
+                                    res(null);
+                                }
+                                res(data.rows[0]);
                             },
                             error(err) {
                                 rej(err);
@@ -501,7 +654,6 @@
             }
 
             function getTags(arr) {
-
                return new Promise(async (res, rej) => {
                     try {
                         let result = [];
