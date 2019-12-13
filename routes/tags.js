@@ -45,9 +45,9 @@ router.get('/:template?', async (req, res) => {
         }
 
         let query = `select * from tag ${filter} ${paging}`;
-        
+
         if (req.query.diagnostics === '1') {
-            conosle.log(query)
+            console.log(query);
         }
 
         const result = await client.query(query);
@@ -187,7 +187,6 @@ router.post('/', async (req, res) => {
     let client;
     try {
         client = await pool.connect();
-        let query = 
         await client.query(`INSERT INTO tag (name, defvalue, title)
             VALUES (
                 UNNEST(ARRAY[${names.map(x => `'${x}'`).join(',')}]), 
@@ -226,6 +225,56 @@ router.delete('/', async (req, res) => {
         client = await pool.connect();
         let filter = tag.id !== undefined ? `id = ${tag.id}` : `name = ${tag.name}`;
         await client.query(`delete from tag where ${filter};`);
+        return res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send({ error: err });
+    } finally {
+        client.end();
+    }
+});
+
+/**
+ * Patches tag in base
+ * @throws {400 No secret key} If internalsecret param is not correct
+ * @throws {400 No id} If name or id for identification is not presented
+ * @throws {400 No changes} If tag contains no changes
+ */
+router.patch('/', async (req, res) => {
+    // inputs and contracts
+    if (req.body.internalsecret !== process.env.SECRET) {
+        return res.status(400).send({ error: 'Sorry but you need to specify the secret key' });
+    }
+
+    let tag = req.body.tag;
+    let changes = [[], []];
+
+    if (tag.name === undefined && tag.id === undefined) {
+        return res.status(400).send({ error: 'Need to specify id or name' });
+    }
+
+    if (tag.defvalue !== undefined) {
+        changes[0].push('defvalue');
+        changes[1].push(tag.defvalue);
+    }
+
+    if (tag.title !== undefined) {
+        changes[0].push('title');
+        changes[1].push(`'${tag.title}'`);
+    }
+
+    if (changes[0].length === 0) {
+        return res.status(400).send({ error: 'No changes' });
+    }
+
+    // query
+    let client;
+    try {
+        client = await pool.connect();
+        let filter = tag.id !== undefined ? `id = ${tag.id}` : `name = '${tag.name}'`;
+        let changesText = `(${changes[0].join()}) = (${changes[1].join()})`;
+
+        await client.query(`update tag set ${changesText} where ${filter};`);
         return res.sendStatus(200);
     } catch (err) {
         console.error(err);

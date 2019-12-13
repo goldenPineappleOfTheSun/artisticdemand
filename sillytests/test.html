@@ -29,10 +29,10 @@
 
     <script>
 
-        if (req.byhand === '1') {throw 'by hand!'}
+        if (req.byhand === '1') { throw new Error('by hand!'); }
 
-        describe('Check table schema', function() {
-            this.timeout(15000); 
+        describe('Check table schema', function () {
+            this.timeout(15000);
             it('First of all lets compare databases', (done) => {
                 if (req.checktables === '0') {
                     return done();
@@ -42,24 +42,24 @@
                     url: `comparedatabases?internalsecret=${req.internalsecret}`,
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data[0], '1', data);
-                        }, done)
+                        }, done);
                     },
                     error(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data[0], '1', data);
-                        }, done)
-                    }
-                })
-            })
-        })
+                        }, done);
+                    },
+                });
+            });
+        });
 
-        describe('Tags', function() {
+        describe('Tags', function () {
 
-            this.timeout(10000); 
+            this.timeout(10000);
 
-            beforeEach(function(done) {
+            beforeEach(function (done) {
                 $.ajax({
                     url: `test/prepareTags?internalsecret=${req.internalsecret}`,
                     method: 'get',
@@ -67,571 +67,709 @@
                         setTimeout(() => done(), 500);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
+                        throw err;
+                    },
                 });
             });
 
             it('tags/all должен вернуть правильный count', (done) => {
                 $.ajax({
-                    url: `tags/all`,
+                    url: 'tags/all',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data.count, '3', data);
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags/all должен вернуть все теги (на самом деле не больше 200)', (done) => {
                 $.ajax({
-                    url: `tags/all`,
+                    url: 'tags/all',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.deepEqual(
                                 data.rows
-                                    .map((x) => { return { 
-                                        name: x.name, 
-                                        defvalue: x.defvalue, 
-                                        title: x.title }
+                                    .map((x) => {
+                                        return {
+                                            name: x.name,
+                                            defvalue: x.defvalue,
+                                            title: x.title };
                                     }),
                                 [{name: 'first', defvalue: true, title: 'Первый'},
-                                {name: 'second', defvalue: true, title: 'Второй'},
-                                {name: 'third', defvalue: false, title: 'Третий'}]);
-                        }, done)
+                                    {name: 'second', defvalue: true, title: 'Второй'},
+                                    {name: 'third', defvalue: false, title: 'Третий'}]);
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags/all?pagesize=10&page=1 должен вернуть все теги на странице', (done) => {
                 $.ajax({
-                    url: `tags/all?pagesize=2&page=1`,
+                    url: 'tags/all?pagesize=2&page=1',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.deepEqual(
                                 data.rows
-                                    .map((x) => { return { 
-                                        name: x.name, 
-                                        defvalue: x.defvalue, 
-                                        title: x.title }
+                                    .map((x) => {
+                                        return {
+                                            name: x.name,
+                                            defvalue: x.defvalue,
+                                            title: x.title };
                                     }),
                                 [{name: 'third', defvalue: false, title: 'Третий'}]);
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags/all?pagesize=10 должен вернуть первую страницу', (done) => {
                 $.ajax({
-                    url: `tags/all?pagesize=2`,
+                    url: 'tags/all?pagesize=2',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.deepEqual(
                                 data.rows
-                                    .map((x) => { return { 
-                                        name: x.name, 
-                                        defvalue: x.defvalue, 
-                                        title: x.title }
+                                    .map((x) => {
+                                        return {
+                                            name: x.name,
+                                            defvalue: x.defvalue,
+                                            title: x.title };
                                     }),
                                 [{name: 'first', defvalue: true, title: 'Первый'},
-                                {name: 'second', defvalue: true, title: 'Второй'}]);
-                        }, done)
+                                    {name: 'second', defvalue: true, title: 'Второй'}]);
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags/all?pagesize=10000 должен ответить, что страница слишком велика', (done) => {
                 $.ajax({
-                    url: `tags/all?pagesize=201`,
+                    url: 'tags/all?pagesize=201',
                     method: 'get',
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('tags/all?pagesize=-5 должен ответить, что страница слишком мала', (done) => {
                 $.ajax({
-                    url: `tags/all?pagesize=201`,
+                    url: 'tags/all?pagesize=201',
                     method: 'get',
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('tags?name=name должен показать тэг по имени', (done) => {
                 $.ajax({
-                    url: `tags?name=second`,
+                    url: 'tags?name=second',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data.rows[0].name, 'second');
                             assert.equal(data.rows[0].defvalue, true);
                             assert.equal(data.rows[0].title, 'Второй');
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags?id=id должен показать тэг по id', (done) => {
                 Promise.resolve()
-                .then(() => getTag({name: 'second'}))
-                .then((tag) => {
-                    $.ajax({
-                        url: `tags?id=${tag.id}`,
-                        method: 'get',
-                        success(data) {
-                            assertAsync(function() {
-                                assert.equal(data.rows[0].name, 'second');
-                                assert.equal(data.rows[0].defvalue, true);
-                                assert.equal(data.rows[0].title, 'Второй');
-                            }, done)
-                        },
-                        error(err) {
-                            setTimeout(() => done(new Error(err)), 100);
-                        }
-                    })
-                })               
-            })
+                    .then(() => getTag({name: 'second'}))
+                    .then((tag) => {
+                        $.ajax({
+                            url: `tags?id=${tag.id}`,
+                            method: 'get',
+                            success(data) {
+                                assertAsync(function () {
+                                    assert.equal(data.rows[0].name, 'second');
+                                    assert.equal(data.rows[0].defvalue, true);
+                                    assert.equal(data.rows[0].title, 'Второй');
+                                }, done);
+                            },
+                            error(err) {
+                                throw err;
+                            },
+                        });
+                    });
+            });
 
             it('tags?name с неверным именем должен вернуть 0 строк', (done) => {
                 $.ajax({
-                    url: `tags?name=nope`,
+                    url: 'tags?name=nope',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data.count, 0);
                             assert.equal(data.rows.length, 0);
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags?defvalue должен вернуть все подходящие (не больше 200)', (done) => {
                 $.ajax({
-                    url: `tags?defvalue=true`,
+                    url: 'tags?defvalue=true',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data.count, 2);
                             assert.equal(data.rows[0].name, 'first');
                             assert.equal(data.rows[1].name, 'second');
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('tags/?pagesize=10&page должен вернуть первую страницу по фильтру', (done) => {
                 $.ajax({
-                    url: `tags/all?pagesize=1&page=0`,
+                    url: 'tags/all?pagesize=1&page=0',
                     method: 'get',
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(data.count, 1);
                             assert.equal(data.rows[0].name, 'first');
-                        }, done)
+                        }, done);
                     },
                     error(err) {
-                        setTimeout(() => done(new Error(err)), 100);
-                    }
-                })
-            })
+                        throw err;
+                    },
+                });
+            });
 
             it('put {name, title, defvalue} должно положить элемент', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'put',
                     data: JSON.stringify({
-                        internalsecret: req.internalsecret, 
+                        internalsecret: req.internalsecret,
                         tag: {
-                            name: 'apple', 
+                            name: 'apple',
                             title: 'Яблоко',
-                            defvalue: true
-                        }                        
+                            defvalue: true,
+                        },
                     }),
                     success(data) {
                         Promise.resolve()
-                        .then(() => getTag({name: 'apple'}))
-                        .then((tag) => {
-                            assertAsync(function() {
-                                assert.equal(tag.name, 'apple');
-                                assert.equal(tag.defvalue, true);
-                                assert.equal(tag.title, 'Яблоко');
-                            }, done)
-                        });                
+                            .then(() => getTag({name: 'apple'}))
+                            .then((tag) => {
+                                assertAsync(function () {
+                                    assert.equal(tag.name, 'apple');
+                                    assert.equal(tag.defvalue, true);
+                                    assert.equal(tag.title, 'Яблоко');
+                                }, done);
+                            });
                     },
                     error(err) {
                         throw err;
-                        setTimeout(() => done(), 100);
-                    }
-                })
-            })
+                    },
+                });
+            });
 
             it('put {name} должно положить элемент со значениями {name, false, name}', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'put',
                     data: JSON.stringify({
-                        internalsecret: req.internalsecret, 
+                        internalsecret: req.internalsecret,
                         tag: {
-                            name: 'apple', 
-                        }                        
+                            name: 'apple',
+                        },
                     }),
                     success(data) {
                         Promise.resolve()
-                        .then(() => getTag({name: 'apple'}))
-                        .then((tag) => {
-                            assertAsync(function() {
-                                assert.equal(tag.name, 'apple');
-                                assert.equal(tag.defvalue, false);
-                                assert.equal(tag.title, 'apple');
-                            }, done)
-                        });                
+                            .then(() => getTag({name: 'apple'}))
+                            .then((tag) => {
+                                assertAsync(function () {
+                                    assert.equal(tag.name, 'apple');
+                                    assert.equal(tag.defvalue, false);
+                                    assert.equal(tag.title, 'apple');
+                                }, done);
+                            });
                     },
                     error(err) {
                         throw err;
-                        setTimeout(() => done(), 100);
-                    }
-                })
-            })
+                    },
+                });
+            });
 
             it('put без name должно сругнуться', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'put',
                     data: JSON.stringify({
-                        internalsecret: req.internalsecret, 
+                        internalsecret: req.internalsecret,
                         tag: {
-                            defvalue: true, 
-                        }                        
+                            defvalue: true,
+                        },
                     }),
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('post tags с пустым массивом должно нормально зайти', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({   
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
-                        arr: []                   
+                        arr: [],
                     }),
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.notEqual(data, undefined);
-                        }, done)
+                        }, done);
                     },
                     error(err) {
                         throw err;
-                        done();
-                    }
-                })
-            })
+                    },
+                });
+            });
 
             it('post tags с двумя элементами должно добавить два элемента', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({ 
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
                         arr: [
-                            {name:'apple', title:'Яблоко', defvalue: true},
-                            {name:'pear', title:'Груша', defvalue: false}
-                        ]                         
+                            {name: 'apple', title: 'Яблоко', defvalue: true},
+                            {name: 'pear', title: 'Груша', defvalue: false},
+                        ],
                     }),
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             Promise.resolve()
-                            .then(() => getTags([{name: 'apple'}, {name: 'pear'}]))
-                            .then((tags) => {
-                                assert.notEqual(tags[0], null);
-                                assert.notEqual(tags[1], null);
-                                assert.equal(tags[0].name, 'apple');
-                                assert.equal(tags[0].defvalue, true);
-                                assert.equal(tags[0].title, 'Яблоко');
-                                assert.equal(tags[1].name, 'pear');
-                                assert.equal(tags[1].defvalue, false);
-                                assert.equal(tags[1].title, 'Груша');
-                            });  
-                        }, done)
+                                .then(() => getTags([{name: 'apple'}, {name: 'pear'}]))
+                                .then((tags) => {
+                                    console.log(data);
+                                    assert.notEqual(tags[0], null);
+                                    assert.notEqual(tags[1], null);
+                                    assert.equal(tags[0].name, 'apple');
+                                    assert.equal(tags[0].defvalue, true);
+                                    assert.equal(tags[0].title, 'Яблоко');
+                                    assert.equal(tags[1].name, 'pear');
+                                    assert.equal(tags[1].defvalue, false);
+                                    assert.equal(tags[1].title, 'Груша');
+                                });
+                        }, done);
                     },
                     error(err) {
                         throw err;
-                        done();
-                    }
-                })
-            })
+                    },
+                });
+            });
 
             it('post tags с тремя элементами где заполнены только имена должно добавить три элемента', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({ 
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
                         arr: [
-                            {name:'apple', title:'Яблоко', defvalue: true},
-                            {name:'pear', title:'Груша'},
-                            {name:'mango'}
-                        ]                         
+                            {name: 'apple', title: 'Яблоко', defvalue: true},
+                            {name: 'pear', title: 'Груша'},
+                            {name: 'mango'},
+                        ],
                     }),
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             Promise.resolve()
-                            .then(() => getTags([{name: 'apple'}, {name: 'pear'}, {name: 'mango'}]))
-                            .then((tags) => {
-                                assert.notEqual(tags[0], null);
-                                assert.notEqual(tags[1], null);
-                                assert.notEqual(tags[2], null);
-                                assert.equal(tags[0].name, 'apple');
-                                assert.equal(tags[1].defvalue, false);
-                                assert.equal(tags[2].title, 'mango');
-                            });  
-                        }, done)
+                                .then(() => getTags([{name: 'apple'}, {name: 'pear'}, {name: 'mango'}]))
+                                .then((tags) => {
+                                    assert.notEqual(tags[0], null);
+                                    assert.notEqual(tags[1], null);
+                                    assert.notEqual(tags[2], null);
+                                    assert.equal(tags[0].name, 'apple');
+                                    assert.equal(tags[1].defvalue, false);
+                                    assert.equal(tags[2].title, 'mango');
+                                });
+                        }, done);
                     },
                     error(err) {
                         throw err;
-                        done();
-                    }
-                })
-            })
+                    },
+                });
+            });
 
-            if (req.checkheavy !== '0')
-            {
+            if (req.checkheavy !== '0') {
                 let tags = [];
-                for (let i=0; i<50; i++) {
-                    tags.push({name:i.toString(16)});
+                for (let i = 0; i < 50; i++) {
+                    tags.push({name: i.toString(16)});
                 }
 
                 it('post tags с пятьюдесятью элементами должно сработать нормально', (done) => {
                     $.ajax({
-                        url: `tags`,
+                        url: 'tags',
                         contentType: 'application/json',
                         method: 'post',
                         data: JSON.stringify({
                             internalsecret: 'q$WLSEuX*8DVk',
                             arr: tags}),
                         success(data) {
-                            assertAsync(function() {
+                            assertAsync(function () {
                                 Promise.resolve()
-                                .then(() => getTags([{name: '0'}, {name: '1a'}, {name: '31'}]))
-                                .then((tags) => {
-                                    assert.notEqual(tags[0], null);
-                                    assert.notEqual(tags[1], null);
-                                    assert.notEqual(tags[2], null);
-                                    assert.equal(tags[0].name, '0');
-                                    assert.equal(tags[1].name, '1a');
-                                    assert.equal(tags[2].name, '31');
-                                });  
-                            }, done)
+                                    .then(() => getTags([{name: '0'}, {name: '1a'}, {name: '31'}]))
+                                    .then((tags) => {
+                                        assert.notEqual(tags[0], null);
+                                        assert.notEqual(tags[1], null);
+                                        assert.notEqual(tags[2], null);
+                                        assert.equal(tags[0].name, '0');
+                                        assert.equal(tags[1].name, '1a');
+                                        assert.equal(tags[2].name, '31');
+                                    });
+                            }, done);
                         },
                         error(err) {
                             throw err;
-                            done()
-                        }
-                    })
-                })
+                        },
+                    });
+                });
             }
 
             it('post tags 51 элементом должен сломаться', (done) => {
 
                 let tags = [];
-                for (let i=0; i<51; i++) {
-                    tags.push({name:i.toString(16)});
+                for (let i = 0; i < 51; i++) {
+                    tags.push({name: i.toString(16)});
                 }
 
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({    
-                        internalsecret: 'q$WLSEuX*8DVk',   
-                        tags: tags               
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tags: tags,
                     }),
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('post tags без массива должен сломаться', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({}),
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                    }),
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('post tags c тремя элементами и у одного нет имени должен сломаться', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
                     method: 'post',
-                    data: JSON.stringify({  
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
                         arr: [
-                            {title:'Яблоко', defvalue: true},
-                            {name:'pear', title:'Груша'},
-                            {name:'mango'},
-                        ]                       
+                            {title: 'Яблоко', defvalue: true},
+                            {name: 'pear', title: 'Груша'},
+                            {name: 'mango'},
+                        ],
                     }),
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
 
             it('delete tags должен удалить тег по id', (done) => {
-                let tag;
                 Promise.resolve()
-                .then(() => getTag({name: 'first'}))
-                .then((tag) => {
-                    $.ajax({
-                        url: `tags`,
-                        contentType: 'application/json',
-                        method: 'post',
-                        data: JSON.stringify({  
-                            internalsecret: 'q$WLSEuX*8DVk',
-                            tag: {id: tag.id, name: 'wrongname'}                 
-                        }),
-                        success(data) {
-                            assertAsync(function() {
-                                Promise.resolve()
-                                .then(() => getTags([{name: 'first'}, {name: 'second'}]))
-                                .then((tags) => {
-                                    assert.equal(tags[0], null);
-                                    assert.equal(tags[1].name, 'second');
-                                });  
-                            }, done)
-                        },
-                       error(err) {
-                           throw err;
-                           done()
-                       }
-                    })
-                })
-            })
+                    .then(() => getTag({name: 'first'}))
+                    .then((tag) => {
+                        $.ajax({
+                            url: 'tags',
+                            contentType: 'application/json',
+                            method: 'delete',
+                            data: JSON.stringify({
+                                internalsecret: 'q$WLSEuX*8DVk',
+                                tag: {id: tag.id, name: 'wrongname'},
+                            }),
+                            success(data) {
+                                assertAsync(function () {
+                                    Promise.resolve()
+                                        .then(() => getTags([{name: 'first'}, {name: 'second'}]))
+                                        .then((tags) => {
+                                            assert.equal(tags[0], null);
+                                            assert.equal(tags[1].name, 'second');
+                                        });
+                                }, done);
+                            },
+                            error(err) {
+                                throw err;
+                            },
+                        });
+                    });
+            });
 
             it('delete tags должен удалить тег по name', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
-                    method: 'post',
-                    data: JSON.stringify({  
+                    method: 'delete',
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
-                        tag: {name: 'second'}                 
+                        tag: {name: 'second'},
                     }),
                     success(data) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             Promise.resolve()
-                            .then(() => getTags([{name: 'first'}, {name: 'second'}]))
-                            .then((tags) => {
-                                assert.equal(tags[0].name, 'first');
-                                assert.equal(tags[1], null);
-                            });  
-                        }, done)
+                                .then(() => getTags([{name: 'first'}, {name: 'second'}]))
+                                .then((tags) => {
+                                    assert.equal(tags[0].name, 'first');
+                                    assert.equal(tags[1], null);
+                                });
+                        }, done);
                     },
-                   error(err) {
-                       throw err;
-                       done()
-                   }
-                })
+                    error(err) {
+                        throw err;
+                    },
+                });
             });
 
             it('delete tags без имени и тега должен упасть', (done) => {
                 $.ajax({
-                    url: `tags`,
+                    url: 'tags',
                     contentType: 'application/json',
-                    method: 'post',
-                    data: JSON.stringify({  
+                    method: 'delete',
+                    data: JSON.stringify({
                         internalsecret: 'q$WLSEuX*8DVk',
-                        tag: {}                 
+                        tag: {},
                     }),
                     success(data) {
-                        throw 'Must fail!';
-                        done();
+                        throw new Error('Must fail!');
                     },
                     error(err) {
-                        assertAsync(function() {
+                        assertAsync(function () {
                             assert.equal(err.status, 400);
-                        }, done)
-                    }
-                })
-            })
+                        }, done);
+                    },
+                });
+            });
+
+            it('delete tags должен вернуть 404 если нечего удалять', (done) => {
+                $.ajax({
+                    url: 'tags',
+                    contentType: 'application/json',
+                    method: 'delete',
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {
+                            id: 0, // risky but hey
+                        },
+                    }),
+                    success(data) {
+                        assertAsync(function () {
+                            assert.equal(data.status, 404);
+                        }, done);
+                    },
+                    error(err) {
+                        throw err;
+                    },
+                });
+            });
+
+            it('patch tag должно патчить по имени', (done) => {
+                $.ajax({
+                    url: 'tags',
+                    contentType: 'application/json',
+                    method: 'patch',
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {
+                            name: 'first',
+                            defvalue: false,
+                            title: 'changed',
+                        },
+                    }),
+                    success(data) {
+                        assertAsync(function () {
+                            Promise.resolve()
+                                .then(() => getTag({name: 'first'}))
+                                .then((tag) => {
+                                    assert.notEqual(tag, null);
+                                    assert.equal(tag.defvalue, false);
+                                    assert.equal(tag.title, 'changed');
+                                });
+                        }, done);
+                    },
+                    error(err) {
+                        throw err;
+                    },
+                });
+            });
+
+            it('patch tag must патчить по ид игнорируя имя', (done) => {
+                Promise.resolve()
+                    .then(() => getTag({name: 'first'}))
+                    .then((tag) => {
+                        $.ajax({
+                            url: 'tags',
+                            contentType: 'application/json',
+                            method: 'patch',
+                            data: JSON.stringify({
+                                internalsecret: 'q$WLSEuX*8DVk',
+                                tag: {
+                                    id: tag.id,
+                                    name: 'wrongname',
+                                    defvalue: false,
+                                    title: 'changed',
+                                },
+                            }),
+                            success(data) {
+                                assertAsync(function () {
+                                    Promise.resolve()
+                                        .then(() => getTag({name: 'first'}))
+                                        .then((result) => {
+                                            assert.notEqual(result, null);
+                                            assert.equal(result.defvalue, false);
+                                            assert.equal(result.title, 'changed');
+                                        });
+                                }, done);
+                            },
+                            error(err) {
+                                throw err;
+                            },
+                        });
+                    });
+            });
+
+            it('patch tag должно ругаться если не дали изменений', (done) => {
+                $.ajax({
+                    url: 'tags',
+                    contentType: 'application/json',
+                    method: 'patch',
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {name: 'first'},
+                    }),
+                    success(data) {
+                        throw new Error('Must fail!');
+                    },
+                    error(err) {
+                        assertAsync(function () {
+                            assert.equal(err.status, 400);
+                        }, done);
+                    },
+                });
+            });
+
+            it('patch tag должно ругаться если нет возможности опознать', (done) => {
+                $.ajax({
+                    url: 'tags',
+                    contentType: 'application/json',
+                    method: 'patch',
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {defvalue: true},
+                    }),
+                    success(data) {
+                        throw new Error('Must fail!');
+                    },
+                    error(err) {
+                        assertAsync(function () {
+                            assert.equal(err.status, 400);
+                        }, done);
+                    },
+                });
+            });
+
+            it('patch tags должен вернуть 404 если нечего менять', (done) => {
+                $.ajax({
+                    url: 'tags',
+                    contentType: 'application/json',
+                    method: 'patch',
+                    data: JSON.stringify({
+                        internalsecret: 'q$WLSEuX*8DVk',
+                        tag: {
+                            id: 0, // risky but hey
+                        },
+                    }),
+                    success(data) {
+                        assertAsync(function () {
+                            assert.equal(data.status, 404);
+                        }, done);
+                    },
+                    error(err) {
+                        throw err;
+                    },
+                });
+            });
 
             function getTag(params) {
                 if (params.name !== undefined) {
@@ -647,32 +785,32 @@
                             },
                             error(err) {
                                 rej(err);
-                            }
-                        })
-                    })
+                            },
+                        });
+                    });
                 }
             }
 
             function getTags(arr) {
-               return new Promise(async (res, rej) => {
+                return new Promise(async (res, rej) => {
                     try {
                         let result = [];
-                        for (let i=0; i<arr.length; i++) {
+                        for (let i = 0; i < arr.length; i++) {
                             let tag = await getTag(arr[i]);
                             result.push(tag);
                         }
                         res(result);
                     } catch (err) {
-                        rej(err)
+                        rej(err);
                     }
-               });
+                });
             }
-        })
+        });
 
         // tags end
 
-        before(function(done) {
-            
+        before(function (done) {
+
             this.timeout(15000);
 
             $.ajax({
@@ -683,13 +821,12 @@
                 },
                 error(err) {
                     throw err;
-                    setTimeout(() => done(), 100);
-                }
-            })
+                },
+            });
         });
 
-        beforeEach(function(done) {
-            
+        beforeEach(function (done) {
+
             this.timeout(20000);
 
             setTimeout(() => done(), 100);
@@ -699,12 +836,10 @@
             let isError = false;
             try {
                 callback();
-            } 
-            catch (err) {
+            } catch (err) {
                 isError = true;
                 done(err);
-            }
-            finally {
+            } finally {
                 if (!isError)
                     done();
             }
@@ -712,7 +847,8 @@
 
         $(document).ready(() => {
             mocha.run();
-        })
+        });
+
     </script>
 </body>
 </html>

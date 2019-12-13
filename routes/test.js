@@ -11,6 +11,33 @@ router.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, '../sillytests/test.html'));
 });
 
+// bd crash
+// js crash
+// 400
+// ok
+
+router.get('/bdcrash', async (req, res) => {
+    try {
+        client = await pool.connect();
+        const result = await client.query('select * from hoi;');
+        return res.send(`"${result.rows[0]}"`);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send({ error: err });
+    } finally {
+        client.end();
+    } 
+});
+
+router.get('/jscrash', async (req, res) => {
+    let a = {};
+    return res.send(a.nope);
+});
+
+router.get('/validation', async (req, res) => {
+    return res.status(400).send({ error: 'op!' });
+});
+
 /**
  * Return result of ping
  * @return {string}
