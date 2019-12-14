@@ -4,6 +4,13 @@ var router = express.Router();
 
 /**
  * Loads all tags by filter using paging. Max page size is 200
+ * @param {/all} Load all without a filter
+ * @param {pagesize} Maximum amount of records  
+ * @param {page} Number of the page starting from 0
+ * @param {name} Name of tag to load. Ignored when there is id
+ * @param {id} Id of tag to load
+ * @param {defvalue} Load tag with that defvalue
+ * @param {title} Load tag with that title
  * @throws {400 Pagesize} If pagesize is smaller than 1
  * @throws {400 Pagesize} If pagesize is bigger than 200
  * @return {count:number, rows:tag[]}
@@ -65,47 +72,9 @@ router.get('/:template?', async (req, res) => {
 });
 
 /**
- * Loads all tags using paging. Max page size is 200
- * @throws {400 Pagesize} If pagesize is smaller than 1
- * @throws {400 Pagesize} If pagesize is bigger than 200
- * @return {Tag[]}
- *//*
-router.get('/all', async (req, res) => {
-    // contract
-
-    let pagesize = parseInt(req.query.pagesize, 10);
-    let page = parseInt(req.query.page, 10);
-
-    if (!isNaN(pagesize) && pagesize > 200) {
-        return res.status(400).send({ error: 'Pagesize must be smaller than 200' });
-    }
-
-    if (!isNaN(pagesize) && pagesize < 1) {
-        return res.status(400).send({ error: 'Pagesize must be bigger than 0' });
-    }
-
-    let client;
-    try {
-        let paging = (!isNaN(pagesize))
-            ? `limit ${pagesize} offset ${pagesize * (page || 0)}`
-            : 'limit 200';
-
-        client = await pool.connect();
-        const result = await client.query(`select * from tag ${paging}`);
-        return res.send({
-            count: result.rowCount,
-            rows: result.rows,
-        });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send({ error: err });
-    } finally {
-        client.end();
-    }
-});*/
-
-/**
  * Puts one tag in the base
+ * @param {tag} The tag to put. No "Id" needed. But "Name" is required. Other props are optional
+ * @param {internalsecret} The Secret Key of admin
  * @throws {400 No secret key} If internalsecret param is not correct
  * @throws {400 No name} If name is not presented
  */
@@ -141,6 +110,8 @@ router.put('/', async (req, res) => {
 
 /**
  * Puts multiple tags the base (max 50)
+ * @param {arr} Array of tags to put. Every tag is similar with one from tag put
+ * @param {internalsecret} The Secret Key of admin
  * @throws {400 No secret key} If internalsecret param is not correct
  * @throws {400 No array} If array presented
  * @throws {400 Too many} If array is bigger than 50
@@ -204,6 +175,8 @@ router.post('/', async (req, res) => {
 
 /**
  * Deletes tag from base
+ * @param {tag} Tag to delete. If "Id" is presented deletes by Id, deletes by "Name" otherwise
+ * @param {internalsecret} The Secret Key of admin
  * @throws {400 No secret key} If internalsecret param is not correct
  * @throws {400 No id} If name or id for identification is not presented
  */
@@ -236,6 +209,8 @@ router.delete('/', async (req, res) => {
 
 /**
  * Patches tag in base
+ * @param {tag} The tag to patch. No "Id" needed. But "Name" is required. Define props to update
+ * @param {internalsecret} The Secret Key of admin
  * @throws {400 No secret key} If internalsecret param is not correct
  * @throws {400 No id} If name or id for identification is not presented
  * @throws {400 No changes} If tag contains no changes
